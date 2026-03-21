@@ -255,7 +255,7 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
   );
 
   return (
-    <div className="flex mx-2 sm:mx-6 mb-3 rounded-2xl overflow-hidden border border-white/[0.06] relative" style={{ height: "calc(100vh - 72px)" }}>
+    <div className="flex mx-2 sm:mx-6 mb-3 rounded-2xl overflow-hidden border border-white/[0.06] relative h-full">
       {/* Sidebar — desktop: permanent, mobile: hidden */}
       <div className="hidden sm:flex w-[220px] flex-shrink-0 flex-col border-r border-white/[0.06]">
         {sidebarContent}

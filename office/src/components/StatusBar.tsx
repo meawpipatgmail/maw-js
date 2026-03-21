@@ -107,7 +107,7 @@ export const StatusBar = memo(function StatusBar({ connected, agentCount, sessio
         </button>
       )}
 
-      <nav className={`${isTouch && onJump ? "" : "ml-auto "}flex items-center gap-3 sm:gap-4 text-sm`}>
+      <nav className={`${isTouch && onJump ? "" : "ml-auto "}flex max-w-full overflow-x-auto items-center gap-3 sm:gap-4 text-sm`}>
         {onInbox && (
           <button onClick={onInbox} className="relative transition-colors whitespace-nowrap text-white/50 hover:text-white/80 cursor-pointer" title="Inbox (i)">
             Inbox

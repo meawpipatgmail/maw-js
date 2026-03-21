@@ -99,17 +99,19 @@ function Layout({ activeView, connected, agentCount, sessionCount, askCount, mut
   children: ReactNode;
 }) {
   const wrapperClass = fullHeight
-    ? "relative flex flex-col h-screen overflow-hidden"
-    : "relative min-h-screen";
+    ? "relative flex flex-col h-full overflow-hidden"
+    : "relative min-h-dvh";
 
   return (
     <div className={wrapperClass} style={{ background: "#020208" }}>
-      <div className={`relative z-10${fullHeight ? " flex-shrink-0" : ""}`}>
+      <div className="relative z-10 flex-shrink-0">
         <StatusBar connected={connected} agentCount={agentCount} sessionCount={sessionCount} activeView={activeView} onJump={onJump} askCount={askCount} onInbox={onInbox} muted={muted} onToggleMute={onToggleMute}>
           {statusBarChildren}
         </StatusBar>
       </div>
-      {children}
+      {fullHeight ? (
+        <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
+      ) : children}
       {terminalModal}
       {showShortcuts && <ShortcutOverlay onClose={onCloseShortcuts} />}
       {jumpOverlay}
@@ -264,7 +266,7 @@ export function App() {
 
   if (route === "mission") {
     return (
-      <Layout activeView="mission" {...layoutProps}>
+      <Layout activeView="mission" {...layoutProps} fullHeight>
         <MissionControl sessions={sessions} agents={agents} connected={connected} send={send} onSelectAgent={onSelectAgent} eventLog={eventLog} addEvent={addEvent} />
       </Layout>
     );
@@ -272,7 +274,7 @@ export function App() {
 
   if (route === "vs") {
     return (
-      <Layout activeView="vs" {...layoutProps}>
+      <Layout activeView="vs" {...layoutProps} fullHeight>
         <VSView agents={agents} send={send} />
       </Layout>
     );
@@ -320,7 +322,7 @@ export function App() {
 
   if (route === "chat") {
     return (
-      <Layout activeView="chat" {...layoutProps}>
+      <Layout activeView="chat" {...layoutProps} fullHeight>
         <ChatView />
       </Layout>
     );

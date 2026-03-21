@@ -283,7 +283,7 @@ export const MissionControl = memo(function MissionControl({
     <div
       ref={containerRef}
       className="relative w-full overflow-hidden"
-      style={{ background: "#020208", height: "calc(100vh - 60px)", cursor: isPanning ? "grabbing" : "default" }}
+      style={{ background: "#020208", height: "100%", cursor: isPanning ? "grabbing" : "default" }}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
