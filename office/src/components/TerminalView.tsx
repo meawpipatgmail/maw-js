@@ -318,7 +318,7 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
         {/* Output */}
         <div
           ref={outputRef}
-          className="flex-1 overflow-y-auto px-3 py-2 font-mono text-[13px] leading-[1.35]"
+          className="flex-1 overflow-y-auto px-3 py-2 font-mono text-[11px] sm:text-[13px] leading-[1.35]"
           style={{ background: "#0a0a0f", whiteSpace: "pre", wordBreak: "normal", overflowX: "auto", color: "#aaa" }}
         >
           {captureHtml ? (
@@ -332,19 +332,24 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
 
         {/* Input line */}
         <div
-          className="flex items-start px-3 py-1.5 border-t border-white/[0.06] font-mono text-[13px] min-h-[32px]"
+          className="flex flex-col sm:flex-row sm:items-start px-3 py-1.5 border-t border-white/[0.06] font-mono text-[13px] min-h-[32px]"
           style={{ background: "#0d0d14" }}
         >
-          <span className="text-white/30 mr-2 mt-[1px] flex-shrink-0">&gt;</span>
-          <span className="text-white/90 whitespace-pre flex-1">{inputBuf}</span>
-          <span
-            className="inline-block w-[7px] h-[15px] ml-[1px] flex-shrink-0"
-            style={{ background: selectedTarget ? "#89b4fa" : "#333", animation: "blink 1s step-end infinite", marginTop: "2px" }}
-          />
-          {sendQueue.length > 0 && (
-            <span className="text-white/30 text-[11px] ml-2">({sendQueue.length} queued)</span>
-          )}
-          <span className="ml-auto flex items-center gap-2 flex-shrink-0">
+          {/* Buffer row */}
+          <div className="flex items-start flex-1 min-w-0">
+            <span className="text-white/30 mr-2 mt-[1px] flex-shrink-0">&gt;</span>
+            <span className="text-white/90 whitespace-pre flex-1 break-all">{inputBuf}</span>
+            <span
+              className="inline-block w-[7px] h-[15px] ml-[1px] flex-shrink-0"
+              style={{ background: selectedTarget ? "#89b4fa" : "#333", animation: "blink 1s step-end infinite", marginTop: "2px" }}
+            />
+            {sendQueue.length > 0 && (
+              <span className="text-white/30 text-[11px] ml-2 flex-shrink-0">({sendQueue.length} queued)</span>
+            )}
+          </div>
+
+          {/* Controls row — stacks below buffer on mobile, inline on desktop */}
+          <div className="flex items-center gap-2 mt-1 sm:mt-0 sm:ml-2 flex-shrink-0">
             {(inputBuf || sendQueue.length > 0) && (
               <span
                 className="text-white/30 text-[11px] cursor-pointer hover:text-red-400 px-1 rounded"
@@ -356,7 +361,7 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
             {inputBuf && selectedTarget && (
               <span
                 title="send"
-                className="cursor-pointer px-2 py-0.5 rounded text-[11px] font-mono select-none"
+                className="cursor-pointer px-3 py-1 sm:px-2 sm:py-0.5 rounded text-[12px] sm:text-[11px] font-mono select-none"
                 style={{ background: "#89b4fa22", color: "#89b4fa" }}
                 onClick={() => { queueSend(inputBuf); setInputBuf(""); termRef.current?.focus(); }}
               >
@@ -366,14 +371,14 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
             {((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) && (
               <span
                 title={listening ? "stop listening" : "voice input (th)"}
-                className="cursor-pointer px-1 rounded text-[15px] select-none transition-opacity"
+                className="cursor-pointer px-1 rounded text-[18px] sm:text-[15px] select-none transition-opacity"
                 style={{ opacity: selectedTarget ? 1 : 0.3 }}
                 onClick={selectedTarget ? toggleVoice : undefined}
               >
                 {listening ? "🔴" : "🎙️"}
               </span>
             )}
-          </span>
+          </div>
         </div>
       </div>
     </div>
