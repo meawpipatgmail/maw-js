@@ -349,15 +349,14 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
           </div>
 
           {/* Controls row — stacks below buffer on mobile, inline on desktop */}
-          <div className="flex items-center gap-2 mt-1 sm:mt-0 sm:ml-2 flex-shrink-0">
-            {(inputBuf || sendQueue.length > 0) && (
-              <span
-                className="text-white/30 text-[11px] cursor-pointer hover:text-red-400 px-1 rounded"
-                onClick={() => { setInputBuf(""); setSendQueue([]); }}
-              >
-                esc
-              </span>
-            )}
+          <div className="flex items-center gap-2 mt-1 sm:mt-0 sm:ml-2 shrink-0">
+            <span
+              className="text-[11px] cursor-pointer px-1 rounded select-none transition-colors"
+              style={{ color: (inputBuf || sendQueue.length > 0) ? "#ef5350" : "#ffffff18" }}
+              onClick={() => { setInputBuf(""); setSendQueue([]); }}
+            >
+              ✕
+            </span>
             {inputBuf && selectedTarget && (
               <span
                 title="send"
