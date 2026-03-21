@@ -195,7 +195,7 @@ export const HoverPreviewCard = memo(function HoverPreviewCard({
       style={{
         background: "#0a0a0f",
         width: PREVIEW_CARD.width,
-        height: "calc(100vh - 120px)",
+        height: "calc(100dvh - 120px)",
         maxHeight: PREVIEW_CARD.maxHeight,
       }}
       onMouseDown={(e) => {

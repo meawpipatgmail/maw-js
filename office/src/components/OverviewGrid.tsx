@@ -175,7 +175,7 @@ export const OverviewGrid = memo(function OverviewGrid({
   }, [agents, grouped]);
 
   return (
-    <div className="relative w-full min-h-screen" style={{ background: "#0a0a12" }}>
+    <div className="relative w-full min-h-dvh" style={{ background: "#0a0a12" }}>
       {/* Summary bar */}
       <div className="max-w-[1600px] mx-auto flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
         <div className="flex items-center gap-4 text-sm font-mono">

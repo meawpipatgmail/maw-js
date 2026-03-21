@@ -296,7 +296,7 @@ export const FleetGrid = memo(function FleetGrid({
   }, [agents, busyAgents, recentMap]);
 
   return (
-    <div ref={containerRef} className="relative w-full min-h-screen" style={{ background: "#0a0a12" }}>
+    <div ref={containerRef} className="relative w-full min-h-dvh" style={{ background: "#0a0a12" }}>
       {/* Toggle: Stage vs Pitch */}
       {stageMode === "pitch" ? (
         <FootballPitch
