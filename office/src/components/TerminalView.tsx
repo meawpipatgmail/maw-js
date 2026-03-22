@@ -351,8 +351,7 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
           {/* Controls row — stacks below buffer on mobile, inline on desktop */}
           <div className="flex items-center gap-2 mt-1 sm:mt-0 sm:ml-2 shrink-0">
             <span
-              className="text-[11px] cursor-pointer px-1 rounded select-none transition-colors"
-              style={{ color: (inputBuf || sendQueue.length > 0) ? "#ef5350" : "#ffffff18" }}
+              className={`text-[11px] cursor-pointer px-1 rounded select-none transition-colors text-red-500 ${(inputBuf || sendQueue.length > 0) ? "block" : "hidden"}`}
               onClick={() => { setInputBuf(""); setSendQueue([]); }}
             >
               ✕
@@ -360,7 +359,7 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
             {inputBuf && selectedTarget && (
               <span
                 title="send"
-                className="cursor-pointer px-3 py-1 sm:px-2 sm:py-0.5 rounded text-[12px] sm:text-[11px] font-mono select-none"
+                className="cursor-pointer px-3 py-1 sm:px-2 sm:py-0.5 rounded text-[12px] sm:text-[11px] font-mono select-none text-nowrap"
                 style={{ background: "#89b4fa22", color: "#89b4fa" }}
                 onClick={() => { queueSend(inputBuf); setInputBuf(""); termRef.current?.focus(); }}
               >
@@ -370,7 +369,7 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
             {((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) && (
               <span
                 title={listening ? "stop listening" : "voice input (th)"}
-                className="cursor-pointer px-1 rounded text-[18px] sm:text-[15px] select-none transition-opacity"
+                className="cursor-pointer px-1 rounded text-[18px] sm:text-[15px] select-none transition-opacity w-full sm:w-auto text-end"
                 style={{ opacity: selectedTarget ? 1 : 0.3 }}
                 onClick={selectedTarget ? toggleVoice : undefined}
               >
