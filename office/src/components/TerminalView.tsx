@@ -4,6 +4,7 @@ import { roomStyle } from "../lib/constants";
 import { wsUrl } from "../lib/api";
 import type { Session, AgentState } from "../lib/types";
 import { CommandAwareInput } from "./CommandAwareInput";
+import { AgentAvatar } from "./AgentAvatar";
 
 interface TerminalViewProps {
   sessions: Session[];
@@ -190,6 +191,11 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
     ? sessions.flatMap(s => s.windows.map(w => ({ target: `${s.name}:${w.index}`, name: w.name }))).find(w => w.target === selectedTarget)?.name || ""
     : "";
 
+  // Find agent + accent for avatar
+  const selectedAgent = selectedTarget ? agents.find(a => a.target === selectedTarget) : null;
+  const selectedSessionName = selectedTarget ? selectedTarget.split(":")[0] : "";
+  const selectedAccent = selectedSessionName ? roomStyle(selectedSessionName).accent : "#89b4fa";
+
   // Sidebar content — shared between desktop and mobile drawer
   const sidebarContent = (
     <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#08080e" }}>
@@ -279,6 +285,19 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
               <rect y="12" width="16" height="2" rx="1"/>
             </svg>
           </button>
+          {/* Mini avatar */}
+          {selectedAgent && (
+            <svg width={36} height={32} viewBox="-55 -55 110 88" style={{ overflow: "visible", flexShrink: 0 }}>
+              <AgentAvatar
+                name={selectedAgent.name}
+                target={selectedAgent.target}
+                status={selectedAgent.status}
+                preview={selectedAgent.preview}
+                accent={selectedAccent}
+                onClick={() => {}}
+              />
+            </svg>
+          )}
           <span
             className="text-xs font-mono text-white/40 cursor-pointer sm:cursor-default truncate"
             onClick={() => setSidebarOpen(o => !o)}
