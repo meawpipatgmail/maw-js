@@ -321,16 +321,23 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
           )}
 
           {/* CommandAwareInput — center */}
-          <CommandAwareInput
-            ref={inputRef}
-            value={inputBuf}
-            onChange={(e) => setInputBuf(e.target.value)}
-            onKeyDown={handleTextareaKeyDown}
-            placeholder={selectedTarget ? "type a command... (Enter to send, Shift+Enter for newline)" : "select a window first"}
-            disabled={!selectedTarget}
-            minRows={1}
-            maxRows={6}
-          />
+          <div className="flex-1 min-w-0 flex flex-row items-center justify-start">
+            <CommandAwareInput
+              ref={inputRef}
+              value={inputBuf}
+              onChange={(e) => setInputBuf(e.target.value)}
+              onKeyDown={handleTextareaKeyDown}
+              placeholder={selectedTarget ? "type a command..." : "select a window first"}
+              disabled={!selectedTarget}
+              minRows={1}
+              maxRows={6}
+            />
+            {selectedTarget && !inputBuf && (
+              <span className="hidden sm:inline text-[10px] font-mono text-white/20 px-3 pb-0.5">
+                Enter ↵ send · Shift+Enter newline
+              </span>
+            )}
+          </div>
 
           {/* Queue indicator */}
           {sendQueue.length > 0 && (
