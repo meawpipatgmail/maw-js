@@ -40,7 +40,7 @@ export async function cmdList() {
     for (const w of s.windows) {
       const target = `${s.name}:${w.index}`;
       const info = infos[target] || { command: "", cwd: "" };
-      const isAgent = /claude|codex|node/i.test(info.command);
+      const isAgent = /claude|codex|node|\d+\.\d+\.\d+/i.test(info.command);
       const cwdBroken = info.cwd.includes("(deleted)") || info.cwd.includes("(dead)");
 
       let dot: string;
@@ -97,7 +97,7 @@ export async function cmdSend(query: string, message: string, force = false) {
   // Detect active Claude session (#17)
   if (!force) {
     const cmd = await getPaneCommand(target);
-    const isAgent = /claude|codex|node/i.test(cmd);
+    const isAgent = /claude|codex|node|\d+\.\d+\.\d+/i.test(cmd);
     if (!isAgent) {
       console.error(`\x1b[31merror\x1b[0m: no active Claude session in ${target} (running: ${cmd})`);
       console.error(`\x1b[33mhint\x1b[0m:  run \x1b[36mmaw wake ${query}\x1b[0m first, or use \x1b[36m--force\x1b[0m to send anyway`);
