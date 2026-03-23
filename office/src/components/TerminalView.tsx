@@ -213,12 +213,12 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
                   }}
                   onClick={() => selectWindow(target)}
                 >
-                  <span className="text-[11px] font-mono text-white/30 w-4 text-right flex-shrink-0">{w.index}</span>
+                  <span className="text-[11px] font-mono text-white/30 w-4 text-right shrink-0">{w.index}</span>
                   <span className="text-[12px] font-mono truncate" style={{ color: isSelected ? style.accent : "#999" }}>
                     {w.name}
                   </span>
                   <span
-                    className="w-1.5 h-1.5 rounded-full ml-auto flex-shrink-0"
+                    className="w-1.5 h-1.5 rounded-full ml-auto shrink-0"
                     style={{ background: statusColor, boxShadow: w.active ? `0 0 4px ${statusColor}` : undefined }}
                   />
                 </div>
@@ -231,9 +231,9 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
   );
 
   return (
-    <div className="flex mx-2 sm:mx-6 mb-3 rounded-2xl overflow-hidden border border-white/[0.06] relative h-full">
+    <div className="flex mx-2 sm:mx-6 mb-3 rounded-2xl overflow-hidden border border-white/ relative h-full">
       {/* Sidebar — desktop: permanent, mobile: hidden */}
-      <div className="hidden sm:flex w-[220px] flex-shrink-0 flex-col border-r border-white/[0.06]">
+      <div className="hidden sm:flex w-55 shrink-0 flex-col border-r border-white/">
         {sidebarContent}
       </div>
 
@@ -247,7 +247,7 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
             onClick={() => setSidebarOpen(false)}
           />
           {/* Drawer */}
-          <div className="relative z-10 w-[260px] flex-shrink-0 flex flex-col border-r border-white/[0.06]">
+          <div className="relative z-10 w-65 shrink-0 flex flex-col border-r border-white/">
             {sidebarContent}
           </div>
         </div>
@@ -261,12 +261,12 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
       >
         {/* Header — tap on mobile to open drawer */}
         <div
-          className="flex items-center gap-3 px-4 py-2 border-b border-white/[0.06] flex-shrink-0"
+          className="flex items-center gap-3 px-4 py-2 border-b border-white/ shrink-0"
           style={{ background: "#0a0a12" }}
         >
           {/* Hamburger — mobile only */}
           <button
-            className="sm:hidden flex-shrink-0 text-white/40 hover:text-white/80 mr-1"
+            className="sm:hidden shrink-0 text-white/40 hover:text-white/80 mr-1"
             onClick={(e) => { e.stopPropagation(); setSidebarOpen(o => !o); }}
             aria-label="toggle window list"
           >
@@ -283,7 +283,7 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
             {selectedName || "select a window"}
           </span>
           {selectedTarget && <span className="hidden sm:inline text-[10px] font-mono text-white/20">{selectedTarget}</span>}
-          <span className="ml-auto text-[10px] font-mono flex-shrink-0" style={{ color: connected ? "#4caf50" : "#ef5350" }}>
+          <span className="ml-auto text-[10px] font-mono shrink-0" style={{ color: connected ? "#4caf50" : "#ef5350" }}>
             {connected ? "live" : "reconnecting"}
           </span>
         </div>
@@ -305,14 +305,14 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
 
         {/* Composer */}
         <div
-          className="flex items-end gap-2 px-3 py-2 border-t border-white/[0.06]"
+          className="flex items-center gap-2 px-3 py-2 border-t border-white/6"
           style={{ background: "#0d0d14" }}
         >
           {/* Voice button — left */}
           {((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) && (
             <button
               title={listening ? "stop listening" : "voice input (th)"}
-              className="flex-shrink-0 text-[18px] select-none transition-opacity pb-1"
+              className="shrink-0 text-[18px] select-none transition-opacity pb-1"
               style={{ opacity: selectedTarget ? 1 : 0.3, cursor: selectedTarget ? "pointer" : "default" }}
               onClick={selectedTarget ? toggleVoice : undefined}
             >
@@ -334,7 +334,7 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
 
           {/* Queue indicator */}
           {sendQueue.length > 0 && (
-            <span className="flex-shrink-0 text-[11px] font-mono text-white/30 pb-1.5">
+            <span className="shrink-0 text-[11px] font-mono text-white/30 pb-1.5">
               {sendQueue.length}q
             </span>
           )}
@@ -343,7 +343,7 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
           {(inputBuf || sendQueue.length > 0) && (
             <button
               title="clear"
-              className="flex-shrink-0 text-red-400 hover:text-red-300 transition-colors text-[13px] pb-1.5"
+              className="text-white bg-red-500 hover:bg-red-400 mr-2 transition-colors text-sm p-2 rounded-full h-6 w-6 flex items-center justify-center"
               onClick={() => { setInputBuf(""); setSendQueue([]); inputRef.current?.focus(); }}
             >
               ✕
@@ -354,11 +354,11 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
           {inputBuf.trim() && selectedTarget && (
             <button
               title="send (Enter)"
-              className="flex-shrink-0 px-2 py-0.5 rounded font-mono text-[12px] select-none mb-1"
+              className="px-2 py-0.5 rounded font-mono text-lg sm:text-2xl select-none h-10 w-10 flex items-center justify-center"
               style={{ background: "#89b4fa22", color: "#89b4fa" }}
               onClick={() => { queueSend(inputBuf); setInputBuf(""); inputRef.current?.focus(); }}
             >
-              ↵
+              <span className="-translate-y-0.5">↵</span>
             </button>
           )}
         </div>

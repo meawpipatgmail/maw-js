@@ -46,7 +46,8 @@ export const AutosizeTextarea = React.forwardRef<HTMLTextAreaElement, AutosizeTe
 
     const handleInput: React.FormEventHandler<HTMLTextAreaElement> = (e) => {
       resize();
-      onInput?.(e);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      onInput?.(e as any);
     };
 
     const handleChange: React.ChangeEventHandler<HTMLTextAreaElement> = (e) => {

@@ -1,7 +1,7 @@
 import React, { ComponentProps } from 'react';
 import { AutosizeTextarea } from './AutosizeTextarea';
 
-export const OVERLAY_COMMANDS = ['/wake', '/sleep', '/hey', '/recap', '/rrr', '/forward', '/workon'];
+export const OVERLAY_COMMANDS = ['/wake', '/sleep', '/hey', '/recap', '/rrr', '/forward', '/workon', '/awaken'];
 
 // Accent color used for command highlighting
 const ACCENT = '#89b4fa';
