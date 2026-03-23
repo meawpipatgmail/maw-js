@@ -7,3 +7,4 @@ ui-state.json
 ~/
 fleet/*.json
 !fleet/*.example.json
+package-lock.json
