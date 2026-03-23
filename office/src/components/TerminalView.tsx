@@ -223,13 +223,23 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
                   onClick={() => selectWindow(target)}
                 >
                   <span className="text-[11px] font-mono text-white/30 w-4 text-right shrink-0">{w.index}</span>
-                  <span className="text-[12px] font-mono truncate" style={{ color: isSelected ? style.accent : "#999" }}>
+                  <span className="text-[12px] font-mono truncate flex-1" style={{ color: isSelected ? style.accent : "#999" }}>
                     {w.name}
                   </span>
-                  <span
-                    className="w-1.5 h-1.5 rounded-full ml-auto shrink-0"
-                    style={{ background: statusColor, boxShadow: w.active ? `0 0 4px ${statusColor}` : undefined }}
-                  />
+                  {agent && (
+                    <div className="shrink-0 w-6 h-6 rounded-full overflow-hidden flex items-center justify-center" style={{ background: "#1a1a24" }}>
+                      <svg width={28} height={26} viewBox="-55 -55 110 88" style={{ overflow: "visible" }}>
+                        <AgentAvatar
+                          name={agent.name}
+                          target={agent.target}
+                          status={agent.status}
+                          preview={agent.preview}
+                          accent={style.accent}
+                          onClick={() => {}}
+                        />
+                      </svg>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -287,16 +297,18 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
           </button>
           {/* Mini avatar */}
           {selectedAgent && (
-            <svg width={36} height={32} viewBox="-55 -55 110 88" style={{ overflow: "visible", flexShrink: 0 }}>
-              <AgentAvatar
-                name={selectedAgent.name}
-                target={selectedAgent.target}
-                status={selectedAgent.status}
-                preview={selectedAgent.preview}
-                accent={selectedAccent}
-                onClick={() => {}}
-              />
-            </svg>
+            <div className="shrink-0 w-8 h-8 rounded-full overflow-hidden flex items-center justify-center" style={{ background: "#1a1a24" }}>
+              <svg width={36} height={32} viewBox="-55 -55 110 88" style={{ overflow: "visible" }}>
+                <AgentAvatar
+                  name={selectedAgent.name}
+                  target={selectedAgent.target}
+                  status={selectedAgent.status}
+                  preview={selectedAgent.preview}
+                  accent={selectedAccent}
+                  onClick={() => {}}
+                />
+              </svg>
+            </div>
           )}
           <span
             className="text-xs font-mono text-white/40 cursor-pointer sm:cursor-default truncate"
