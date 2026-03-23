@@ -3,6 +3,7 @@ import { ansiToHtml } from "../lib/ansi";
 import { roomStyle } from "../lib/constants";
 import { wsUrl } from "../lib/api";
 import type { Session, AgentState } from "../lib/types";
+import { CommandAwareInput } from "./CommandAwareInput";
 
 interface TerminalViewProps {
   sessions: Session[];
@@ -21,6 +22,7 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
   const wsRef = useRef<WebSocket | null>(null);
   const outputRef = useRef<HTMLDivElement>(null);
   const termRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const sendingRef = useRef(false);
   const recognitionRef = useRef<any>(null);
 
@@ -73,7 +75,7 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
     setInputBuf("");
     setSendQueue([]);
     setSidebarOpen(false);
-    termRef.current?.focus();
+    inputRef.current?.focus();
   }, []);
 
   // Flush send queue
@@ -139,7 +141,7 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
     };
 
     rec.onerror = () => { setListening(false); recognitionRef.current = null; };
-    rec.onend = () => { setListening(false); recognitionRef.current = null; termRef.current?.focus(); };
+    rec.onend = () => { setListening(false); recognitionRef.current = null; inputRef.current?.focus(); };
 
     rec.start();
   }, [listening]);
@@ -147,15 +149,8 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
   // Cleanup on unmount
   useEffect(() => () => { recognitionRef.current?.stop(); }, []);
 
-  // Paste handler — fires on right-click paste or Ctrl+Shift+V
-  const handlePaste = useCallback((e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const text = e.clipboardData.getData("text");
-    if (text) setInputBuf(b => b + text);
-  }, []);
-
-  // Keyboard handler
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+  // Keyboard handler for the textarea composer
+  const handleTextareaKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Alt+Arrow to navigate between windows
     if (e.altKey && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
       e.preventDefault();
@@ -171,38 +166,19 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
 
     if (!selectedTarget) return;
 
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (e.shiftKey) {
-        // Shift+Enter → newline in buffer
-        setInputBuf(b => b + "\n");
-      } else {
-        // Enter → send
-        if (inputBuf) { queueSend(inputBuf); setInputBuf(""); }
-      }
-    } else if (e.key === "Backspace") {
-      e.preventDefault();
-      if (e.metaKey || e.ctrlKey) setInputBuf("");
-      else setInputBuf(b => b.slice(0, -1));
+      if (inputBuf.trim()) { queueSend(inputBuf); setInputBuf(""); }
     } else if (e.key === "Escape") {
       e.preventDefault();
       setInputBuf(""); setSendQueue([]);
     } else if (e.key === "c" && e.ctrlKey) {
       e.preventDefault();
       setInputBuf(""); setSendQueue([]);
-    } else if ((e.key === "v" && e.ctrlKey) || (e.key === "v" && e.metaKey)) {
-      // Ctrl+V / Cmd+V → paste from clipboard
-      e.preventDefault();
-      navigator.clipboard.readText().then(text => {
-        if (text) setInputBuf(b => b + text);
-      }).catch(() => {});
     } else if (e.key === "Tab") {
       e.preventDefault();
       queueSend(inputBuf + "\t");
       setInputBuf("");
-    } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
-      e.preventDefault();
-      setInputBuf(b => b + e.key);
     }
   }, [selectedTarget, inputBuf, queueSend, selectWindow, sessions]);
 
@@ -281,10 +257,7 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
       <div
         ref={termRef}
         className="flex-1 flex flex-col min-w-0 outline-none"
-        tabIndex={0}
-        onKeyDown={handleKeyDown}
-        onPaste={handlePaste}
-        onClick={() => termRef.current?.focus()}
+        onClick={() => inputRef.current?.focus()}
       >
         {/* Header — tap on mobile to open drawer */}
         <div
@@ -330,53 +303,64 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
           )}
         </div>
 
-        {/* Input line */}
+        {/* Composer */}
         <div
-          className="flex flex-col sm:flex-row sm:items-start px-3 py-1.5 border-t border-white/[0.06] font-mono text-[13px] min-h-[32px]"
+          className="flex items-end gap-2 px-3 py-2 border-t border-white/[0.06]"
           style={{ background: "#0d0d14" }}
         >
-          {/* Buffer row */}
-          <div className="flex items-start flex-1 min-w-0">
-            <span className="text-white/30 mr-2 mt-[1px] flex-shrink-0">&gt;</span>
-            <span className="text-white/90 whitespace-pre flex-1 break-all">{inputBuf}</span>
-            <span
-              className="inline-block w-[7px] h-[15px] ml-[1px] flex-shrink-0"
-              style={{ background: selectedTarget ? "#89b4fa" : "#333", animation: "blink 1s step-end infinite", marginTop: "2px" }}
-            />
-            {sendQueue.length > 0 && (
-              <span className="text-white/30 text-[11px] ml-2 flex-shrink-0">({sendQueue.length} queued)</span>
-            )}
-          </div>
+          {/* Voice button — left */}
+          {((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) && (
+            <button
+              title={listening ? "stop listening" : "voice input (th)"}
+              className="flex-shrink-0 text-[18px] select-none transition-opacity pb-1"
+              style={{ opacity: selectedTarget ? 1 : 0.3, cursor: selectedTarget ? "pointer" : "default" }}
+              onClick={selectedTarget ? toggleVoice : undefined}
+            >
+              {listening ? "🔴" : "🎙️"}
+            </button>
+          )}
 
-          {/* Controls row — stacks below buffer on mobile, inline on desktop */}
-          <div className="flex items-center gap-2 mt-1 sm:mt-0 sm:ml-2 shrink-0">
-            <span
-              className={`text-[11px] cursor-pointer px-1 rounded select-none transition-colors text-red-500 ${(inputBuf || sendQueue.length > 0) ? "block" : "hidden"}`}
-              onClick={() => { setInputBuf(""); setSendQueue([]); }}
+          {/* CommandAwareInput — center */}
+          <CommandAwareInput
+            ref={inputRef}
+            value={inputBuf}
+            onChange={(e) => setInputBuf(e.target.value)}
+            onKeyDown={handleTextareaKeyDown}
+            placeholder={selectedTarget ? "type a command... (Enter to send, Shift+Enter for newline)" : "select a window first"}
+            disabled={!selectedTarget}
+            minRows={1}
+            maxRows={6}
+          />
+
+          {/* Queue indicator */}
+          {sendQueue.length > 0 && (
+            <span className="flex-shrink-0 text-[11px] font-mono text-white/30 pb-1.5">
+              {sendQueue.length}q
+            </span>
+          )}
+
+          {/* Clear button */}
+          {(inputBuf || sendQueue.length > 0) && (
+            <button
+              title="clear"
+              className="flex-shrink-0 text-red-400 hover:text-red-300 transition-colors text-[13px] pb-1.5"
+              onClick={() => { setInputBuf(""); setSendQueue([]); inputRef.current?.focus(); }}
             >
               ✕
-            </span>
-            {inputBuf && selectedTarget && (
-              <span
-                title="send"
-                className="cursor-pointer px-3 py-1 sm:px-2 sm:py-0.5 rounded text-[12px] sm:text-[11px] font-mono select-none text-nowrap"
-                style={{ background: "#89b4fa22", color: "#89b4fa" }}
-                onClick={() => { queueSend(inputBuf); setInputBuf(""); termRef.current?.focus(); }}
-              >
-                send ↵
-              </span>
-            )}
-            {((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) && (
-              <span
-                title={listening ? "stop listening" : "voice input (th)"}
-                className="cursor-pointer px-1 rounded text-[18px] sm:text-[15px] select-none transition-opacity w-full sm:w-auto text-end"
-                style={{ opacity: selectedTarget ? 1 : 0.3 }}
-                onClick={selectedTarget ? toggleVoice : undefined}
-              >
-                {listening ? "🔴" : "🎙️"}
-              </span>
-            )}
-          </div>
+            </button>
+          )}
+
+          {/* Send button */}
+          {inputBuf.trim() && selectedTarget && (
+            <button
+              title="send (Enter)"
+              className="flex-shrink-0 px-2 py-0.5 rounded font-mono text-[12px] select-none mb-1"
+              style={{ background: "#89b4fa22", color: "#89b4fa" }}
+              onClick={() => { queueSend(inputBuf); setInputBuf(""); inputRef.current?.focus(); }}
+            >
+              ↵
+            </button>
+          )}
         </div>
       </div>
     </div>
