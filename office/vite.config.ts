@@ -21,9 +21,9 @@ export default defineConfig({
     host: true,
     allowedHosts: ["white.local"],
     proxy: {
-      "/api": "http://white.local:3456",
-      "/ws/pty": { target: "ws://white.local:3456", ws: true },
-      "/ws": { target: "ws://white.local:3456", ws: true },
+      "/api": "http://localhost:3456",
+      "/ws/pty": { target: "ws://localhost:3456", ws: true },
+      "/ws": { target: "ws://localhost:3456", ws: true },
     },
   },
 });

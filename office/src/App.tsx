@@ -15,6 +15,7 @@ import { InboxOverlay } from "./components/InboxView";
 import { WorktreeView } from "./components/WorktreeView";
 import { ChatView } from "./components/ChatView";
 import { SecretaryView } from "./components/SecretaryView";
+import { AvatarPage } from "./components/AvatarPage";
 import { DashboardView } from "./components/DashboardView";
 import { ShortcutOverlay } from "./components/ShortcutOverlay";
 import { JumpOverlay } from "./components/JumpOverlay";
@@ -333,6 +334,16 @@ export function App() {
     return (
       <Layout activeView="secretary" {...layoutProps} fullHeight>
         <SecretaryView />
+      </Layout>
+    );
+  }
+
+  if (route === "avatar") {
+    return (
+      <Layout activeView="avatar" {...layoutProps}>
+        <div className="overflow-y-auto" style={{ background: "#0a0a0f", minHeight: "calc(100dvh - 48px)" }}>
+          <AvatarPage />
+        </div>
       </Layout>
     );
   }

@@ -2,9 +2,11 @@ node_modules/
 dist-office/
 maw.config.json
 ui-state.json
+data/avatars/
 
 # Bun global link artifacts
 ~/
 fleet/*.json
 !fleet/*.example.json
 package-lock.json
+.env

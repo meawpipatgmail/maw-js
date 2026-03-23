@@ -23,6 +23,7 @@ const NAV_ITEMS = [
   { href: "#chat", label: "Chat", id: "chat" },
   { href: "#config", label: "Config", id: "config" },
   { href: "#secretary", label: "Secretary", id: "secretary" },
+  { href: "#avatar", label: "Avatar", id: "avatar" },
 ];
 
 const isTouch = typeof window !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0);
