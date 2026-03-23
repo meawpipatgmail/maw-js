@@ -14,6 +14,7 @@ import { TerminalView } from "./components/TerminalView";
 import { InboxOverlay } from "./components/InboxView";
 import { WorktreeView } from "./components/WorktreeView";
 import { ChatView } from "./components/ChatView";
+import { SecretaryView } from "./components/SecretaryView";
 import { DashboardView } from "./components/DashboardView";
 import { ShortcutOverlay } from "./components/ShortcutOverlay";
 import { JumpOverlay } from "./components/JumpOverlay";
@@ -324,6 +325,14 @@ export function App() {
     return (
       <Layout activeView="chat" {...layoutProps} fullHeight>
         <ChatView />
+      </Layout>
+    );
+  }
+
+  if (route === "secretary") {
+    return (
+      <Layout activeView="secretary" {...layoutProps} fullHeight>
+        <SecretaryView />
       </Layout>
     );
   }
