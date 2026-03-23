@@ -168,7 +168,9 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
 
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (inputBuf.trim()) { queueSend(inputBuf); setInputBuf(""); }
+      // Use e.currentTarget.value instead of inputBuf closure to avoid stale state
+      const text = e.currentTarget.value;
+      if (text.trim()) { queueSend(text); setInputBuf(""); }
     } else if (e.key === "Escape") {
       e.preventDefault();
       setInputBuf(""); setSendQueue([]);
@@ -177,10 +179,11 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
       setInputBuf(""); setSendQueue([]);
     } else if (e.key === "Tab") {
       e.preventDefault();
-      queueSend(inputBuf + "\t");
+      const text = e.currentTarget.value;
+      queueSend(text + "\t");
       setInputBuf("");
     }
-  }, [selectedTarget, inputBuf, queueSend, selectWindow, sessions]);
+  }, [selectedTarget, queueSend, selectWindow, sessions]);
 
   // Get display name for selected target
   const selectedName = selectedTarget
