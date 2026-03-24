@@ -214,9 +214,8 @@ function GalleryGrid({ gallery, selectedId, onSelect, onUseSvg }: {
 
 // ---- Main AvatarPage ----
 
-const TARGET = "maw:0";
-
-export function AvatarPage() {
+export function AvatarPage({ oracleName }: { oracleName: string }) {
+  const NAME = oracleName;
   const [form, setForm] = useState<AvatarFormState>(DEFAULTS);
   const [status, setStatus] = useState<GenerateStatus>({ phase: "idle" });
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
@@ -225,7 +224,7 @@ export function AvatarPage() {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchGallery = useCallback(() => {
-    fetch(apiUrl(`/api/avatar/gallery/${encodeURIComponent(TARGET)}`))
+    fetch(apiUrl(`/api/avatar/gallery/${encodeURIComponent(NAME)}`))
       .then(r => r.json())
       .then((data: { gallery: GalleryEntry[] }) => setGallery(data.gallery || []))
       .catch(() => {});
@@ -233,7 +232,7 @@ export function AvatarPage() {
 
   // Load current selection + gallery on mount
   useEffect(() => {
-    fetch(apiUrl(`/api/avatar/current/${encodeURIComponent(TARGET)}`))
+    fetch(apiUrl(`/api/avatar/current/${encodeURIComponent(NAME)}`))
       .then(r => r.json())
       .then((data: { imageUrl: string | null; fields: AvatarFields | null; selectedId: string | null }) => {
         setCurrentImageUrl(data.imageUrl);
@@ -256,7 +255,7 @@ export function AvatarPage() {
           if (data.imageUrl) setCurrentImageUrl(data.imageUrl);
           fetchGallery();
           // Refresh current selection to get new selectedId
-          fetch(apiUrl(`/api/avatar/current/${encodeURIComponent(TARGET)}`))
+          fetch(apiUrl(`/api/avatar/current/${encodeURIComponent(NAME)}`))
             .then(r => r.json())
             .then((d: { selectedId: string | null }) => setSelectedId(d.selectedId))
             .catch(() => {});
@@ -285,7 +284,7 @@ export function AvatarPage() {
       const res = await fetch(apiUrl("/api/avatar/generate"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ target: TARGET, fields, sfw }),
+        body: JSON.stringify({ name: NAME, fields, sfw }),
       });
       const data = await res.json() as { jobId?: string; status?: string; valid?: boolean; reason?: string; error?: string };
 
@@ -311,7 +310,7 @@ export function AvatarPage() {
       const res = await fetch(apiUrl("/api/avatar/select"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ target: TARGET, entryId }),
+        body: JSON.stringify({ name: NAME, entryId }),
       });
       const data = await res.json() as { ok: boolean; imageUrl: string | null; selectedId: string | null };
       if (data.ok) {
@@ -326,7 +325,7 @@ export function AvatarPage() {
       const res = await fetch(apiUrl("/api/avatar/select"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ target: TARGET, entryId: null }),
+        body: JSON.stringify({ name: NAME, entryId: null }),
       });
       const data = await res.json() as { ok: boolean };
       if (data.ok) {

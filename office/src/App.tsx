@@ -342,7 +342,7 @@ export function App() {
     return (
       <Layout activeView="avatar" {...layoutProps}>
         <div className="overflow-y-auto" style={{ background: "#0a0a0f", minHeight: "calc(100dvh - 48px)" }}>
-          <AvatarPage />
+          <AvatarPage oracleName="oracle" />
         </div>
       </Layout>
     );

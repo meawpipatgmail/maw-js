@@ -364,8 +364,8 @@ import { handleSelect } from "./avatar/select";
 
 app.post("/api/avatar/generate", handleGenerate);
 app.get("/api/avatar/status/:jobId", handleStatus);
-app.get("/api/avatar/current/:target", handleCurrent);
-app.get("/api/avatar/gallery/:target", handleGallery);
+app.get("/api/avatar/current/:name", handleCurrent);
+app.get("/api/avatar/gallery/:name", handleGallery);
 app.post("/api/avatar/select", handleSelect);
 
 // --- Worktree Hygiene ---

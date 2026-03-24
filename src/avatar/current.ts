@@ -2,10 +2,10 @@ import type { Context } from "hono";
 import { loadSelection } from "./storage";
 
 export async function handleCurrent(c: Context) {
-  const target = c.req.param("target");
-  if (!target) return c.json({ error: "target required" }, 400);
+  const name = c.req.param("name");
+  if (!name) return c.json({ error: "name required" }, 400);
 
-  const selection = loadSelection(target);
+  const selection = loadSelection(name);
   if (!selection) {
     return c.json({ imageUrl: null, fields: null, selectedId: null });
   }

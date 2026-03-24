@@ -1,21 +1,20 @@
 import type { Context } from "hono";
 import { refinePrompt, validatePrompt } from "./refine";
 import type { AvatarFields } from "./refine";
-import { submitJob } from "./tensorart";
+import { submitJob, pollUntilDone } from "./tensorart";
 import { saveJob, updateJob, saveAvatarFromJob } from "./storage";
-import { pollUntilDone } from "./tensorart";
 
 export async function handleGenerate(c: Context) {
-  let body: { target: string; fields: AvatarFields; sfw: boolean };
+  let body: { name: string; fields: AvatarFields; sfw: boolean };
   try {
     body = await c.req.json();
   } catch {
     return c.json({ error: "Invalid JSON body" }, 400);
   }
 
-  const { target, fields, sfw } = body;
-  if (!target || !fields) {
-    return c.json({ error: "target and fields required" }, 400);
+  const { name, fields, sfw } = body;
+  if (!name || !fields) {
+    return c.json({ error: "name and fields required" }, 400);
   }
 
   // LLM refinement
@@ -46,21 +45,21 @@ export async function handleGenerate(c: Context) {
     return c.json({ error: `TensorArt submit failed: ${e.message}` }, 500);
   }
 
-  saveJob(jobId, { target, status: "pending", fields });
+  saveJob(jobId, { oracleName: name, status: "pending", fields });
 
   // Poll TensorArt in background
-  processJob(jobId, target, fields).catch(e => console.error("[avatar] processJob error:", e.message));
+  processJob(jobId, name, fields).catch(e => console.error("[avatar] processJob error:", e.message));
 
   return c.json({ jobId, status: "pending" });
 }
 
-async function processJob(jobId: string, target: string, fields: any) {
+async function processJob(jobId: string, name: string, fields: AvatarFields) {
   try {
-    console.log(`[avatar] polling TensorArt for job ${jobId}...`);
+    console.log(`[avatar] polling TensorArt for job ${jobId} (oracle: ${name})...`);
     const imageUrl = await pollUntilDone(jobId);
     console.log(`[avatar] job ${jobId} done:`, imageUrl);
     updateJob(jobId, { status: "done", imageUrl });
-    saveAvatarFromJob(target, imageUrl, fields);
+    saveAvatarFromJob(name, imageUrl, fields);
   } catch (e: any) {
     console.error(`[avatar] job ${jobId} failed:`, e.message);
     updateJob(jobId, { status: "failed", error: e.message });

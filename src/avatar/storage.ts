@@ -11,15 +11,17 @@ function ensureDirs() {
   if (!existsSync(AVATARS_DIR)) mkdirSync(AVATARS_DIR, { recursive: true });
 }
 
-function sanitizeTarget(target: string): string {
-  return target.replace(/:/g, "_");
+function sanitizeName(name: string): string {
+  // Oracle name should already be clean (e.g. "forge", "secretary")
+  // but strip anything non-alphanumeric just in case
+  return name.toLowerCase().replace(/[^a-z0-9-_]/g, "_");
 }
 
 // ---- Job State ----
 
 export interface JobState {
   jobId: string;
-  target: string;
+  oracleName: string;
   status: "pending" | "done" | "failed";
   imageUrl?: string;
   error?: string;
@@ -28,14 +30,14 @@ export interface JobState {
   updatedAt: string;
 }
 
-export function saveJob(jobId: string, data: Partial<JobState> & { target: string }): JobState {
+export function saveJob(jobId: string, data: Partial<JobState> & { oracleName: string }): JobState {
   ensureDirs();
   const path = join(JOBS_DIR, `${jobId}.json`);
   const now = new Date().toISOString();
   const existing = loadJob(jobId);
   const state: JobState = {
     jobId,
-    target: data.target,
+    oracleName: data.oracleName,
     status: data.status || "pending",
     imageUrl: data.imageUrl,
     error: data.error,
@@ -76,24 +78,24 @@ export interface GalleryEntry {
 }
 
 export interface AvatarSelection {
-  target: string;
-  selectedId: string | null;  // null = use SVG
+  oracleName: string;
+  selectedId: string | null;  // null = use procedural SVG
   imageUrl: string | null;    // denormalized for quick access
   fields: AvatarFields | null;
   updatedAt: string;
 }
 
-function galleryPath(target: string): string {
-  return join(AVATARS_DIR, `${sanitizeTarget(target)}_gallery.json`);
+function galleryPath(name: string): string {
+  return join(AVATARS_DIR, `${sanitizeName(name)}_gallery.json`);
 }
 
-function selectionPath(target: string): string {
-  return join(AVATARS_DIR, `${sanitizeTarget(target)}.json`);
+function selectionPath(name: string): string {
+  return join(AVATARS_DIR, `${sanitizeName(name)}.json`);
 }
 
-export function loadGallery(target: string): GalleryEntry[] {
+export function loadGallery(name: string): GalleryEntry[] {
   ensureDirs();
-  const path = galleryPath(target);
+  const path = galleryPath(name);
   if (!existsSync(path)) return [];
   try {
     return JSON.parse(readFileSync(path, "utf-8")) as GalleryEntry[];
@@ -102,9 +104,9 @@ export function loadGallery(target: string): GalleryEntry[] {
   }
 }
 
-export function addToGallery(target: string, imageUrl: string, fields: AvatarFields): GalleryEntry {
+export function addToGallery(name: string, imageUrl: string, fields: AvatarFields): GalleryEntry {
   ensureDirs();
-  const gallery = loadGallery(target);
+  const gallery = loadGallery(name);
   const entry: GalleryEntry = {
     id: randomUUID(),
     imageUrl,
@@ -112,12 +114,12 @@ export function addToGallery(target: string, imageUrl: string, fields: AvatarFie
     createdAt: new Date().toISOString(),
   };
   gallery.unshift(entry); // newest first
-  writeFileSync(galleryPath(target), JSON.stringify(gallery, null, 2));
+  writeFileSync(galleryPath(name), JSON.stringify(gallery, null, 2));
   return entry;
 }
 
-export function loadSelection(target: string): AvatarSelection | null {
-  const path = selectionPath(target);
+export function loadSelection(name: string): AvatarSelection | null {
+  const path = selectionPath(name);
   if (!existsSync(path)) return null;
   try {
     return JSON.parse(readFileSync(path, "utf-8")) as AvatarSelection;
@@ -126,13 +128,13 @@ export function loadSelection(target: string): AvatarSelection | null {
   }
 }
 
-export function setSelection(target: string, entryId: string | null): AvatarSelection {
+export function setSelection(name: string, entryId: string | null): AvatarSelection {
   ensureDirs();
   let imageUrl: string | null = null;
   let fields: AvatarFields | null = null;
 
   if (entryId !== null) {
-    const gallery = loadGallery(target);
+    const gallery = loadGallery(name);
     const entry = gallery.find(e => e.id === entryId);
     if (entry) {
       imageUrl = entry.imageUrl;
@@ -141,19 +143,19 @@ export function setSelection(target: string, entryId: string | null): AvatarSele
   }
 
   const selection: AvatarSelection = {
-    target,
+    oracleName: name,
     selectedId: entryId,
     imageUrl,
     fields,
     updatedAt: new Date().toISOString(),
   };
-  writeFileSync(selectionPath(target), JSON.stringify(selection, null, 2));
+  writeFileSync(selectionPath(name), JSON.stringify(selection, null, 2));
   return selection;
 }
 
 /** Called after a job succeeds — adds to gallery and auto-selects it */
-export function saveAvatarFromJob(target: string, imageUrl: string, fields: AvatarFields): GalleryEntry {
-  const entry = addToGallery(target, imageUrl, fields);
-  setSelection(target, entry.id);
+export function saveAvatarFromJob(name: string, imageUrl: string, fields: AvatarFields): GalleryEntry {
+  const entry = addToGallery(name, imageUrl, fields);
+  setSelection(name, entry.id);
   return entry;
 }
