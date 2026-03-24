@@ -281,10 +281,8 @@ export const AgentRow = memo(function AgentRow({
           onClick={(e) => onAgentClick(agent, accent, roomLabel, e)}
           role="button" tabIndex={0} aria-label={`${agent.name} - sleeping`}
         >
-          <div className="flex-shrink-0" style={{ width: 28, height: 28 }}>
-            <svg viewBox="-40 -50 80 80" width={28} height={28} overflow="visible" style={{ filter: "grayscale(1)" }}>
-              <AgentAvatar name={agent.name} target={agent.target} status="idle" preview="" accent="#666" onClick={() => {}} />
-            </svg>
+          <div className="flex-shrink-0" style={{ width: 28, height: 28, filter: "grayscale(1)" }}>
+            <AgentAvatar name={agent.name} target={agent.target} status="idle" preview="" accent="#666" onClick={() => {}} size={28} />
           </div>
           <span className="text-[13px] font-medium text-white/40 truncate flex-1">{displayName}</span>
           <span className="text-[10px] font-mono px-2 py-0.5 rounded-md" style={{ background: "rgba(255,255,255,0.04)", color: "#64748B" }}>sleeping</span>
@@ -326,9 +324,7 @@ export const AgentRow = memo(function AgentRow({
           onMouseEnter={isTouch ? undefined : (e) => showPreview(agent, accent, roomLabel, e)}
           onMouseLeave={isTouch ? undefined : () => hidePreview()}
         >
-          <svg viewBox="-40 -50 80 80" width={featured ? 96 : 56} height={featured ? 96 : 56} overflow="visible">
-            <AgentAvatar name={agent.name} target={agent.target} status={agent.status} preview={agent.preview} accent={accent} activity={feedLog?.[0]?.text} onClick={() => {}} />
-          </svg>
+          <AgentAvatar name={agent.name} target={agent.target} status={agent.status} preview={agent.preview} accent={accent} activity={feedLog?.[0]?.text} onClick={() => {}} size={featured ? 96 : 56} />
         </div>
 
         {!isTouch && (

@@ -259,21 +259,15 @@ export const FootballPitch = memo(function FootballPitch({
                         />
                       </>
                     )}
-                    <svg
-                      viewBox="-40 -50 80 80"
-                      width={baseSize}
-                      height={baseSize}
-                      overflow="visible"
-                    >
-                      <AgentAvatar
-                        name={agent.name}
-                        target={agent.target}
-                        status={agent.status}
-                        preview={agent.preview}
-                        accent={rs.accent}
-                        onClick={() => {}}
-                      />
-                    </svg>
+                    <AgentAvatar
+                      name={agent.name}
+                      target={agent.target}
+                      status={agent.status}
+                      preview={agent.preview}
+                      accent={rs.accent}
+                      onClick={() => {}}
+                      size={baseSize}
+                    />
                     <span
                       className="font-bold font-mono mt-0.5 truncate text-center"
                       style={{

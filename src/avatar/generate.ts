@@ -55,9 +55,9 @@ export async function handleGenerate(c: Context) {
 
 async function processJob(jobId: string, name: string, fields: AvatarFields) {
   try {
-    console.log(`[avatar] polling TensorArt for job ${jobId} (oracle: ${name})...`);
+    // console.log(`[avatar] polling TensorArt for job ${jobId} (oracle: ${name})...`);
     const imageUrl = await pollUntilDone(jobId);
-    console.log(`[avatar] job ${jobId} done:`, imageUrl);
+    // console.log(`[avatar] job ${jobId} done:`, imageUrl);
     updateJob(jobId, { status: "done", imageUrl });
     saveAvatarFromJob(name, imageUrl, fields);
   } catch (e: any) {

@@ -171,17 +171,16 @@ export const StageSection = memo(function StageSection({
                   className="absolute -top-2 left-1/2 -translate-x-1/2 w-24 h-28 pointer-events-none"
                   style={{ background: `radial-gradient(ellipse at 50% 0%, ${rs.accent}15 0%, transparent 70%)` }}
                 />
-                <svg viewBox="-40 -50 80 80" width={112} height={112} overflow="visible">
-                  <AgentAvatar
-                    name={agent.name}
-                    target={agent.target}
-                    status={agent.status}
-                    preview={agent.preview}
-                    accent={rs.accent}
-                    activity={feedLog?.[0]?.text}
-                    onClick={() => {}}
-                  />
-                </svg>
+                <AgentAvatar
+                  name={agent.name}
+                  target={agent.target}
+                  status={agent.status}
+                  preview={agent.preview}
+                  accent={rs.accent}
+                  activity={feedLog?.[0]?.text}
+                  onClick={() => {}}
+                  size={112}
+                />
                 <span className="text-[12px] font-semibold truncate max-w-[120px] text-center" style={{ color: rs.accent }}>
                   {displayName}
                 </span>
@@ -207,16 +206,16 @@ export const StageSection = memo(function StageSection({
                 onMouseLeave={() => hidePreview()}
                 onClick={(e) => onAgentClick(agent, rs.accent, rs.label, e)}
               >
-                <svg viewBox="-40 -50 80 80" width={size} height={size} overflow="visible" style={{ transition: "width 2s ease-out, height 2s ease-out" }}>
-                  <AgentAvatar
-                    name={agent.name}
-                    target={agent.target}
-                    status={agent.status}
-                    preview={agent.preview}
-                    accent={rs.accent}
-                    onClick={() => {}}
-                  />
-                </svg>
+                <AgentAvatar
+                  name={agent.name}
+                  target={agent.target}
+                  status={agent.status}
+                  preview={agent.preview}
+                  accent={rs.accent}
+                  onClick={() => {}}
+                  size={size}
+                  style={{ transition: "width 2s ease-out, height 2s ease-out" }}
+                />
                 <span className="font-semibold truncate text-center" style={{ color: "#64748B", fontSize: size > 80 ? 12 : 10, maxWidth: size > 80 ? 120 : 76, transition: "all 2s ease-out" }}>
                   {displayName}
                 </span>

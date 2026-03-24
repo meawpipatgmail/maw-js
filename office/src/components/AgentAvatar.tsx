@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, type CSSProperties } from "react";
 import { agentColor } from "../lib/constants";
 import { useFleetStore } from "../lib/store";
 import type { PaneStatus } from "../lib/types";
@@ -9,7 +9,7 @@ const STATUS_FX: Record<PaneStatus, { color: string; aura: number; sparkle: bool
   idle:  { color: "#666",    aura: 0, sparkle: false, typing: false },
 };
 
-interface AgentAvatarProps {
+interface BaseProps {
   name: string;
   target: string;
   status: PaneStatus;
@@ -19,19 +19,25 @@ interface AgentAvatarProps {
   onClick: () => void;
 }
 
-export const AgentAvatar = memo(function AgentAvatar({ name, target, status, preview, accent, activity, onClick }: AgentAvatarProps) {
+interface AgentAvatarProps extends BaseProps {
+  size?: number | [number, number];
+  viewBox?: string;
+  className?: string;
+  style?: CSSProperties;
+}
+
+/* ─── Internal: full chibi SVG <g> with all effects ─── */
+const ChibiG = memo(function ChibiG({ name, target, status, preview, accent, activity, onClick }: BaseProps) {
   const color = agentColor(name);
   const fx = STATUS_FX[status];
   const filterId = `glow-${target.replace(/[^a-z0-9]/gi, "-")}`;
   const auraId = `aura-${target.replace(/[^a-z0-9]/gi, "-")}`;
-  const clipId = `avatar-clip-${target.replace(/[^a-z0-9]/gi, "-")}`;
+
 
   const displayName = name.replace(/-oracle$/, "").replace(/-/g, " ");
   const shortName = displayName.length > 10 ? displayName.slice(0, 10) + ".." : displayName;
   const isCompacting = preview.toLowerCase().includes("compacting");
 
-  const avatarUrls = useFleetStore((s) => s.avatarUrls);
-  const imageUrl = avatarUrls[name] ?? null;
 
   // Deterministic features from name hash
   let h = 0;
@@ -54,9 +60,6 @@ export const AgentAvatar = memo(function AgentAvatar({ name, target, status, pre
           <stop offset="70%" stopColor={fx.color} stopOpacity={0.05} />
           <stop offset="100%" stopColor={fx.color} stopOpacity={0} />
         </radialGradient>
-        <clipPath id={clipId}>
-          <circle cx={0} cy={-10} r={22} />
-        </clipPath>
       </defs>
 
       {/* === LEVEL 2 AURA (busy) === */}
@@ -102,23 +105,7 @@ export const AgentAvatar = memo(function AgentAvatar({ name, target, status, pre
         fill={status === "idle" ? "#333" : fx.color}
         opacity={status === "idle" ? 0.3 : 0.2} />
 
-      {/* === IMAGE AVATAR (when set) === */}
-      {imageUrl ? (
-        <g style={(fx.typing || isCompacting) ? { animation: "chibi-spin 3s ease-in-out infinite", transformOrigin: "0 0" } : {}}>
-          {/* Circle border */}
-          <circle cx={0} cy={-10} r={22} fill={color} stroke="#fff" strokeWidth={2} opacity={0.15} />
-          {/* Image clipped to circle */}
-          <image href={imageUrl} x={-22} y={-32} width={44} height={44} clipPath={`url(#${clipId})`} preserveAspectRatio="xMidYMid slice" />
-          {/* Border ring */}
-          <circle cx={0} cy={-10} r={22} fill="none" stroke="#fff" strokeWidth={1.5} opacity={0.6} />
-          {/* Head energy overlay (busy) */}
-          {fx.aura >= 2 && (
-            <circle cx={0} cy={-10} r={22} fill={fx.color} opacity={0.15}
-              style={{ animation: "agent-pulse 1s ease-in-out infinite" }} />
-          )}
-        </g>
-      ) : (
-      /* Chibi body group — spins when busy or compacting */
+      {/* Chibi body group — spins when busy or compacting */}
       <g style={(fx.typing || isCompacting) ? { animation: "chibi-spin 3s ease-in-out infinite", transformOrigin: "0 0" } : {}}>
 
       {/* === CHIBI BODY (small hoodie) === */}
@@ -235,7 +222,7 @@ export const AgentAvatar = memo(function AgentAvatar({ name, target, status, pre
       <ellipse cx={-7} cy={29} rx={3.5} ry={2} fill="#333" />
       <ellipse cx={7} cy={29} rx={3.5} ry={2} fill="#333" />
 
-      </g>)}{/* end chibi-spin group / end imageUrl ternary */}
+      </g>{/* end chibi-spin group */}
 
       {/* Status dot */}
       {status !== "idle" && (
@@ -286,4 +273,125 @@ export const AgentAvatar = memo(function AgentAvatar({ name, target, status, pre
       {/* Tooltip rendered as HTML in AgentCard */}
     </g>
   );
+});
+
+/* ─── Main export: HTML for image, SVG for chibi ─── */
+export const AgentAvatar = memo(function AgentAvatar({
+  name, target, status, preview, accent, activity, onClick,
+  size = 56, viewBox = "-40 -50 80 80", className, style,
+}: AgentAvatarProps) {
+  const imageUrl = useFleetStore((s) => s.avatarUrls)[name] ?? null;
+  const [w, h] = Array.isArray(size) ? size : [size, size];
+
+  if (imageUrl) {
+    const fx = STATUS_FX[status];
+    return (
+      <div className={className} onClick={onClick} style={{
+        width: w, height: h,
+        cursor: "pointer",
+        position: "relative",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        ...style,
+      }}>
+        <img
+          src={imageUrl}
+          alt={name}
+          draggable={false}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "top center",
+            borderRadius: "50%",
+            display: "block",
+          }}
+        />
+        {/* Status ring overlay */}
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          borderRadius: "50%",
+          boxShadow: status === "busy"
+            ? `inset 0 0 0 2px ${fx.color}, 0 0 8px ${fx.color}50`
+            : `inset 0 0 0 1.5px ${fx.color}${status === "idle" ? "30" : "60"}`,
+          pointerEvents: "none",
+        }} />
+        {/* Status dot */}
+        {status !== "idle" && (
+          <div style={{
+            position: "absolute",
+            top: "5%",
+            right: "5%",
+            width: Math.max(6, Math.min(w, h) * 0.14),
+            height: Math.max(6, Math.min(w, h) * 0.14),
+            borderRadius: "50%",
+            background: fx.color,
+            border: "1.5px solid #1a1a1a",
+            boxShadow: `0 0 4px ${fx.color}`,
+          }} />
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <svg
+      className={className}
+      viewBox={viewBox}
+      width={w}
+      height={h}
+      style={{ overflow: "visible", ...style }}
+    >
+      <ChibiG
+        name={name} target={target} status={status}
+        preview={preview} accent={accent} activity={activity}
+        onClick={onClick}
+      />
+    </svg>
+  );
+});
+
+/* ─── SVG-context export: <g> for embedding in larger SVG canvases ─── */
+export const AgentAvatarG = memo(function AgentAvatarG(props: BaseProps) {
+  const imageUrl = useFleetStore((s) => s.avatarUrls)[props.name] ?? null;
+
+  if (imageUrl) {
+    const fx = STATUS_FX[props.status];
+    const filterId = `glow-img-${props.target.replace(/[^a-z0-9]/gi, "-")}`;
+    return (
+      <g style={{ cursor: "pointer" }} onClick={props.onClick}>
+        <defs>
+          <filter id={filterId} x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="4" />
+          </filter>
+        </defs>
+        <foreignObject x={-22} y={-32} width={44} height={44}>
+          <div style={{ width: 44, height: 44, borderRadius: "50%", overflow: "hidden" }}>
+            <img
+              src={imageUrl}
+              alt={props.name}
+              draggable={false}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: "top center",
+                display: "block",
+              }}
+            />
+          </div>
+        </foreignObject>
+        <circle cx={0} cy={-10} r={22} fill="none" stroke="#fff" strokeWidth={1.5} />
+        {props.status !== "idle" && (
+          <circle cx={16} cy={-28} r={5} fill={fx.color} opacity={0.4} filter={`url(#${filterId})`} />
+        )}
+        <circle cx={16} cy={-28} r={3.5} fill={fx.color} stroke="#1a1a1a" strokeWidth={1.5}
+          style={fx.aura >= 2 ? { animation: "agent-pulse 0.6s ease-in-out infinite" } : {}} />
+      </g>
+    );
+  }
+
+  return <ChibiG {...props} />;
 });

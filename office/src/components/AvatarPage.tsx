@@ -90,9 +90,7 @@ function OracleSelector({ agents, selected, onSelect }: {
         {selectedAgent ? (
           <>
             <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 flex items-center justify-center" style={{ background: "#1a1a24" }}>
-              <svg width={28} height={24} viewBox="-55 -55 110 88" style={{ overflow: "visible" }}>
-                <AgentAvatar name={selectedAgent.name} target={selectedAgent.target} status={selectedAgent.status} preview={selectedAgent.preview} accent="#89b4fa" onClick={() => {}} />
-              </svg>
+              <AgentAvatar name={selectedAgent.name} target={selectedAgent.target} status={selectedAgent.status} preview={selectedAgent.preview} accent="#89b4fa" onClick={() => {}} size={[28, 24]} viewBox="-55 -55 110 88" />
             </div>
             <span className="font-mono text-[13px]" style={{ color: "#89b4fa" }}>{selectedAgent.name}</span>
             <span className="text-[11px] text-white/30 font-mono">{selectedAgent.target}</span>
@@ -117,9 +115,7 @@ function OracleSelector({ agents, selected, onSelect }: {
               onClick={() => { onSelect(agent.name); setOpen(false); }}
             >
               <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 flex items-center justify-center" style={{ background: "#0f0f18" }}>
-                <svg width={24} height={21} viewBox="-55 -55 110 88" style={{ overflow: "visible" }}>
-                  <AgentAvatar name={agent.name} target={agent.target} status={agent.status} preview={agent.preview} accent="#89b4fa" onClick={() => {}} />
-                </svg>
+                <AgentAvatar name={agent.name} target={agent.target} status={agent.status} preview={agent.preview} accent="#89b4fa" onClick={() => {}} size={[24, 21]} viewBox="-55 -55 110 88" />
               </div>
               <span className="font-mono text-[12px]" style={{ color: agent.name === selected ? "#89b4fa" : "#ccc" }}>
                 {agent.name === selected ? "✓ " : ""}{agent.name}
@@ -224,16 +220,16 @@ function AvatarDisplay({ imageUrl, oracleName }: { imageUrl: string | null; orac
         {imageUrl ? (
           <img src={imageUrl} alt="avatar" className="w-full h-full object-cover" />
         ) : (
-          <svg width={88} height={78} viewBox="-55 -55 110 88" style={{ overflow: "visible" }}>
-            <AgentAvatar
-              name={oracleName || "oracle"}
-              target="maw:0"
-              status="ready"
-              preview=""
-              accent="#89b4fa"
-              onClick={() => {}}
-            />
-          </svg>
+          <AgentAvatar
+            name={oracleName || "oracle"}
+            target="maw:0"
+            status="ready"
+            preview=""
+            accent="#89b4fa"
+            onClick={() => {}}
+            size={[88, 78]}
+            viewBox="-55 -55 110 88"
+          />
         )}
       </div>
       {!imageUrl && oracleName && (
@@ -271,9 +267,7 @@ function GalleryGrid({ gallery, selectedId, oracleName, onSelect, onUseSvg }: {
           onClick={onUseSvg}
           title="Use procedural SVG"
         >
-          <svg width={40} height={36} viewBox="-55 -55 110 88" style={{ overflow: "visible" }}>
-            <AgentAvatar name={oracleName} target="maw:0" status="ready" preview="" accent="#89b4fa" onClick={() => {}} />
-          </svg>
+          <AgentAvatar name={oracleName} target="maw:0" status="ready" preview="" accent="#89b4fa" onClick={() => {}} size={[40, 36]} viewBox="-55 -55 110 88" />
         </button>
 
         {gallery.map(entry => (

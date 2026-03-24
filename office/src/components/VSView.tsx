@@ -85,9 +85,7 @@ function AgentPicker({ agents, onSelect, onClose }: {
                 onMouseEnter={() => setSelectedIdx(i)}
               >
                 <div style={{ width: 28, height: 28 }} className="flex-shrink-0">
-                  <svg viewBox="-40 -50 80 80" width={28} height={28} overflow="visible">
-                    <AgentAvatar name={agent.name} target={agent.target} status={agent.status} preview="" accent={accent} onClick={() => {}} />
-                  </svg>
+                  <AgentAvatar name={agent.name} target={agent.target} status={agent.status} preview="" accent={accent} onClick={() => {}} size={28} />
                 </div>
                 <span
                   className="w-2 h-2 rounded-full flex-shrink-0"

@@ -90,16 +90,15 @@ export const VSAgentPanel = memo(function VSAgentPanel({ agent, send, onPickAgen
         onClick={onPickAgent}
       >
         <div style={{ width: 36, height: 36 }} className="flex-shrink-0">
-          <svg viewBox="-40 -50 80 80" width={36} height={36} overflow="visible">
-            <AgentAvatar
-              name={agent.name}
-              target={agent.target}
-              status={status}
-              preview=""
-              accent={accent}
-              onClick={() => {}}
-            />
-          </svg>
+          <AgentAvatar
+            name={agent.name}
+            target={agent.target}
+            status={status}
+            preview=""
+            accent={accent}
+            onClick={() => {}}
+            size={36}
+          />
         </div>
         <span className="text-[14px] font-semibold font-mono truncate" style={{ color: accent }}>
           {displayName}

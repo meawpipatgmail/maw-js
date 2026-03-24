@@ -1,5 +1,5 @@
 import { memo, useMemo, useState, useCallback, useRef, useEffect } from "react";
-import { AgentAvatar } from "./AgentAvatar";
+import { AgentAvatarG } from "./AgentAvatar";
 import { HoverPreviewCard } from "./HoverPreviewCard";
 import { Joystick } from "./Joystick";
 import { OracleSearch } from "./OracleSearch";
@@ -414,7 +414,7 @@ export const MissionControl = memo(function MissionControl({
                       }}
                       style={{ transition: "transform 0.15s ease-out" }}
                     >
-                      <AgentAvatar
+                      <AgentAvatarG
                         name={agent.name}
                         target={agent.target}
                         status={agent.status}

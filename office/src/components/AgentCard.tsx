@@ -18,16 +18,16 @@ export const AgentCard = memo(function AgentCard({ agent, accent, onClick }: Age
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <svg width={100} height={85} viewBox="-55 -55 110 88" style={{ overflow: "visible" }}>
-        <AgentAvatar
-          name={agent.name}
-          target={agent.target}
-          status={agent.status}
-          preview={agent.preview}
-          accent={accent}
-          onClick={onClick}
-        />
-      </svg>
+      <AgentAvatar
+        name={agent.name}
+        target={agent.target}
+        status={agent.status}
+        preview={agent.preview}
+        accent={accent}
+        onClick={onClick}
+        size={[100, 85]}
+        viewBox="-55 -55 110 88"
+      />
       <span
         className="text-[11px] font-bold tracking-wide truncate max-w-[100px] text-center"
         style={{ color: accent }}
