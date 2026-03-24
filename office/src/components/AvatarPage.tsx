@@ -213,12 +213,18 @@ function AvatarFieldRow({ fieldKey, label, presets, value, onChange, disabled }:
 
 // ---- AvatarDisplay ----
 
-function AvatarDisplay({ imageUrl, oracleName }: { imageUrl: string | null; oracleName: string | null }) {
+function AvatarDisplay({ imageUrl, oracleName, onExpand }: { imageUrl: string | null; oracleName: string | null; onExpand: () => void }) {
   return (
     <div className="flex flex-col items-center mb-6">
       <div
         className="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center border-2"
-        style={{ background: "#1a1a24", borderColor: imageUrl ? "#89b4fa44" : "#ffffff15" }}
+        style={{
+          background: "#1a1a24",
+          borderColor: imageUrl ? "#89b4fa44" : "#ffffff15",
+          cursor: imageUrl ? "pointer" : "default",
+        }}
+        onClick={imageUrl ? onExpand : undefined}
+        title={imageUrl ? "Click to expand" : undefined}
       >
         {imageUrl ? (
           <img src={imageUrl} alt="avatar" className="w-full h-full object-cover object-top" />
@@ -239,6 +245,38 @@ function AvatarDisplay({ imageUrl, oracleName }: { imageUrl: string | null; orac
       {!imageUrl && oracleName && (
         <span className="mt-1.5 text-[10px] text-white/20 font-mono">procedural svg</span>
       )}
+    </div>
+  );
+}
+
+// ---- ImageLightbox ----
+
+function ImageLightbox({ src, onClose }: { src: string; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: "rgba(0,0,0,0.85)" }}
+      onClick={onClose}
+    >
+      <img
+        src={src}
+        alt="avatar full"
+        className="max-h-[90vh] max-w-[90vw] object-contain rounded-xl shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      />
+      <button
+        className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center text-white/60 hover:text-white transition-colors"
+        style={{ background: "#ffffff12", border: "1px solid #ffffff20" }}
+        onClick={onClose}
+      >
+        ✕
+      </button>
     </div>
   );
 }
@@ -359,6 +397,7 @@ export function AvatarPage({ agents }: { agents: AgentState[] }) {
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [gallery, setGallery] = useState<GalleryEntry[]>([]);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const setAvatarUrls = useFleetStore((s) => s.setAvatarUrls);
 
@@ -522,7 +561,10 @@ export function AvatarPage({ agents }: { agents: AgentState[] }) {
       <OracleSelector agents={agents} selected={selectedOracle} onSelect={handleSelectOracle} />
 
       {/* Current avatar display */}
-      <AvatarDisplay imageUrl={currentImageUrl} oracleName={selectedOracle} />
+      <AvatarDisplay imageUrl={currentImageUrl} oracleName={selectedOracle} onExpand={() => setLightboxOpen(true)} />
+      {lightboxOpen && currentImageUrl && (
+        <ImageLightbox src={currentImageUrl} onClose={() => setLightboxOpen(false)} />
+      )}
 
       {/* Gallery */}
       {selectedOracle && (
