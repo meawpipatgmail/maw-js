@@ -153,9 +153,7 @@ export function setSelection(name: string, entryId: string | null): AvatarSelect
   return selection;
 }
 
-/** Called after a job succeeds — adds to gallery and auto-selects it */
+/** Called after a job succeeds — adds to gallery only, does NOT auto-select */
 export function saveAvatarFromJob(name: string, imageUrl: string, fields: AvatarFields): GalleryEntry {
-  const entry = addToGallery(name, imageUrl, fields);
-  setSelection(name, entry.id);
-  return entry;
+  return addToGallery(name, imageUrl, fields);
 }

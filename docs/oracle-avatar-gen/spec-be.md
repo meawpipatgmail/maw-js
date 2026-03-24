@@ -212,7 +212,7 @@ POST /jobs
     "type": "DIFFUSION",
     "diffusion": {
       "width": 512,
-      "height": 512,
+      "height": 768,
       "prompts": [{ "text": "{refinedPrompt}" }],
       "negativePrompts": [{ "text": "{negativePrompt}" }],
       "sdModel": "...",         // model ID สำหรับ anime/chibi style

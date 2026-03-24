@@ -43,6 +43,10 @@ interface FleetStore {
   addAsk: (ask: Omit<AskItem, "id" | "ts">) => void;
   dismissAsk: (id: string) => void;
   dismissByOracle: (oracle: string) => void;
+
+  // Avatar URLs — fetched from /api/avatar/all, not persisted
+  avatarUrls: Record<string, string | null>;
+  setAvatarUrls: (urls: Record<string, string | null>) => void;
 }
 
 const RECENT_TTL = 30 * 60 * 1000; // 30 minutes
@@ -204,6 +208,9 @@ export const useFleetStore = create<FleetStore>()(
         persistAsks(next);
         return { asks: next };
       }),
+
+      avatarUrls: {},
+      setAvatarUrls: (urls) => set({ avatarUrls: urls }),
     }),
     {
       name: "maw.fleet",

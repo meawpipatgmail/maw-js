@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { agentColor } from "../lib/constants";
+import { useFleetStore } from "../lib/store";
 import type { PaneStatus } from "../lib/types";
 
 const STATUS_FX: Record<PaneStatus, { color: string; aura: number; sparkle: boolean; typing: boolean }> = {
@@ -23,10 +24,14 @@ export const AgentAvatar = memo(function AgentAvatar({ name, target, status, pre
   const fx = STATUS_FX[status];
   const filterId = `glow-${target.replace(/[^a-z0-9]/gi, "-")}`;
   const auraId = `aura-${target.replace(/[^a-z0-9]/gi, "-")}`;
+  const clipId = `avatar-clip-${target.replace(/[^a-z0-9]/gi, "-")}`;
 
   const displayName = name.replace(/-oracle$/, "").replace(/-/g, " ");
   const shortName = displayName.length > 10 ? displayName.slice(0, 10) + ".." : displayName;
   const isCompacting = preview.toLowerCase().includes("compacting");
+
+  const avatarUrls = useFleetStore((s) => s.avatarUrls);
+  const imageUrl = avatarUrls[name] ?? null;
 
   // Deterministic features from name hash
   let h = 0;
@@ -49,6 +54,9 @@ export const AgentAvatar = memo(function AgentAvatar({ name, target, status, pre
           <stop offset="70%" stopColor={fx.color} stopOpacity={0.05} />
           <stop offset="100%" stopColor={fx.color} stopOpacity={0} />
         </radialGradient>
+        <clipPath id={clipId}>
+          <circle cx={0} cy={-10} r={22} />
+        </clipPath>
       </defs>
 
       {/* === LEVEL 2 AURA (busy) === */}
@@ -94,7 +102,23 @@ export const AgentAvatar = memo(function AgentAvatar({ name, target, status, pre
         fill={status === "idle" ? "#333" : fx.color}
         opacity={status === "idle" ? 0.3 : 0.2} />
 
-      {/* Chibi body group — spins when busy or compacting */}
+      {/* === IMAGE AVATAR (when set) === */}
+      {imageUrl ? (
+        <g style={(fx.typing || isCompacting) ? { animation: "chibi-spin 3s ease-in-out infinite", transformOrigin: "0 0" } : {}}>
+          {/* Circle border */}
+          <circle cx={0} cy={-10} r={22} fill={color} stroke="#fff" strokeWidth={2} opacity={0.15} />
+          {/* Image clipped to circle */}
+          <image href={imageUrl} x={-22} y={-32} width={44} height={44} clipPath={`url(#${clipId})`} preserveAspectRatio="xMidYMid slice" />
+          {/* Border ring */}
+          <circle cx={0} cy={-10} r={22} fill="none" stroke="#fff" strokeWidth={1.5} opacity={0.6} />
+          {/* Head energy overlay (busy) */}
+          {fx.aura >= 2 && (
+            <circle cx={0} cy={-10} r={22} fill={fx.color} opacity={0.15}
+              style={{ animation: "agent-pulse 1s ease-in-out infinite" }} />
+          )}
+        </g>
+      ) : (
+      /* Chibi body group — spins when busy or compacting */
       <g style={(fx.typing || isCompacting) ? { animation: "chibi-spin 3s ease-in-out infinite", transformOrigin: "0 0" } : {}}>
 
       {/* === CHIBI BODY (small hoodie) === */}
@@ -211,7 +235,7 @@ export const AgentAvatar = memo(function AgentAvatar({ name, target, status, pre
       <ellipse cx={-7} cy={29} rx={3.5} ry={2} fill="#333" />
       <ellipse cx={7} cy={29} rx={3.5} ry={2} fill="#333" />
 
-      </g>{/* end chibi-spin group */}
+      </g>)}{/* end chibi-spin group / end imageUrl ternary */}
 
       {/* Status dot */}
       {status !== "idle" && (

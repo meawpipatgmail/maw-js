@@ -23,7 +23,7 @@ export async function submitJob(
         type: "DIFFUSION",
         diffusion: {
           width: 512,
-          height: 512,
+          height: 768,
           prompts: [{ text: prompt }],
           negativePrompts: [{ text: negativePrompt }],
           sdModel: "977348956268792231", // Counterfeit-V3.0 (anime/chibi)

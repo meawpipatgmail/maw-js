@@ -21,6 +21,7 @@ import { ShortcutOverlay } from "./components/ShortcutOverlay";
 import { JumpOverlay } from "./components/JumpOverlay";
 import { unlockAudio, isAudioUnlocked, setSoundMuted } from "./lib/sounds";
 import { useFleetStore } from "./lib/store";
+import { apiUrl } from "./lib/api";
 import type { AgentState } from "./lib/types";
 
 function parseHash(raw: string): { view: string; agentName: string | null } {
@@ -166,6 +167,18 @@ export function App() {
   }, []);
 
   const { sessions, agents, eventLog, addEvent, handleMessage, feedEvents, feedActive, agentFeedLog } = useSessions();
+
+  // Fetch avatar URLs and keep fresh every 30s
+  const setAvatarUrls = useFleetStore((s) => s.setAvatarUrls);
+  useEffect(() => {
+    const load = () => fetch(apiUrl("/api/avatar/all"))
+      .then(r => r.json())
+      .then((data: Record<string, string | null>) => setAvatarUrls(data))
+      .catch(() => {});
+    load();
+    const id = setInterval(load, 30_000);
+    return () => clearInterval(id);
+  }, [setAvatarUrls]);
 
   // Resolve hash agent name → AgentState once agents are loaded
   const pendingHashAgent = useRef(hashAgent);
@@ -342,7 +355,7 @@ export function App() {
     return (
       <Layout activeView="avatar" {...layoutProps}>
         <div className="overflow-y-auto" style={{ background: "#0a0a0f", minHeight: "calc(100dvh - 48px)" }}>
-          <AvatarPage oracleName="oracle" />
+          <AvatarPage agents={agents} />
         </div>
       </Layout>
     );
