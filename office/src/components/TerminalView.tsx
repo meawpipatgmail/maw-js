@@ -188,7 +188,7 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
 
   // Get display name for selected target
   const selectedName = selectedTarget
-    ? sessions.flatMap(s => s.windows.map(w => ({ target: `${s.name}:${w.index}`, name: w.name }))).find(w => w.target === selectedTarget)?.name || ""
+    ? agents.find(a => a.target === selectedTarget)?.name || ""
     : "";
 
   // Find agent + accent for avatar
@@ -224,7 +224,7 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
                 >
                   <span className="text-[11px] font-mono text-white/30 w-4 text-right shrink-0">{w.index}</span>
                   <span className="text-[12px] font-mono truncate flex-1" style={{ color: isSelected ? style.accent : "#999" }}>
-                    {w.name}
+                    {agent?.name || w.name}
                   </span>
                   {agent && (
                     <div className="shrink-0 w-6 h-6 rounded-full overflow-hidden flex items-center justify-center" style={{ background: "#1a1a24" }}>
