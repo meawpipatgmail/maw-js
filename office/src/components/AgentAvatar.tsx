@@ -24,6 +24,7 @@ interface AgentAvatarProps extends BaseProps {
   viewBox?: string;
   className?: string;
   style?: CSSProperties;
+  forceSvg?: boolean;
 }
 
 /* ─── Internal: full chibi SVG <g> with all effects ─── */
@@ -278,9 +279,9 @@ const ChibiG = memo(function ChibiG({ name, target, status, preview, accent, act
 /* ─── Main export: HTML for image, SVG for chibi ─── */
 export const AgentAvatar = memo(function AgentAvatar({
   name, target, status, preview, accent, activity, onClick,
-  size = 56, viewBox = "-40 -50 80 80", className, style,
+  size = 56, viewBox = "-40 -50 80 80", className, style, forceSvg,
 }: AgentAvatarProps) {
-  const imageUrl = useFleetStore((s) => s.avatarUrls)[name] ?? null;
+  const imageUrl = forceSvg ? null : (useFleetStore((s) => s.avatarUrls)[name] ?? null);
   const [w, h] = Array.isArray(size) ? size : [size, size];
 
   if (imageUrl) {

@@ -2,7 +2,7 @@ import type { Context } from "hono";
 import { refinePrompt, validatePrompt } from "./refine";
 import type { AvatarFields } from "./refine";
 import { submitJob, pollUntilDone } from "./tensorart";
-import { saveJob, updateJob, saveAvatarFromJob } from "./storage";
+import { saveJob, updateJob, saveAvatarFromJob, downloadImage } from "./storage";
 
 export async function handleGenerate(c: Context) {
   let body: { name: string; fields: AvatarFields; sfw: boolean };
@@ -55,11 +55,20 @@ export async function handleGenerate(c: Context) {
 
 async function processJob(jobId: string, name: string, fields: AvatarFields) {
   try {
-    // console.log(`[avatar] polling TensorArt for job ${jobId} (oracle: ${name})...`);
-    const imageUrl = await pollUntilDone(jobId);
-    // console.log(`[avatar] job ${jobId} done:`, imageUrl);
-    updateJob(jobId, { status: "done", imageUrl });
-    saveAvatarFromJob(name, imageUrl, fields);
+    const remoteUrl = await pollUntilDone(jobId);
+
+    // Download image locally before the presigned URL expires
+    let localPath: string;
+    try {
+      localPath = await downloadImage(remoteUrl, jobId);
+      console.log(`[avatar] job ${jobId} image saved locally: ${localPath}`);
+    } catch (dlErr: any) {
+      console.error(`[avatar] job ${jobId} image download failed: ${dlErr.message}, using remote URL`);
+      localPath = remoteUrl; // fallback to remote URL if download fails
+    }
+
+    updateJob(jobId, { status: "done", imageUrl: localPath });
+    saveAvatarFromJob(name, localPath, fields);
   } catch (e: any) {
     console.error(`[avatar] job ${jobId} failed:`, e.message);
     updateJob(jobId, { status: "failed", error: e.message });

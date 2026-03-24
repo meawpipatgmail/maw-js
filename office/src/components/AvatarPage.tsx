@@ -229,6 +229,7 @@ function AvatarDisplay({ imageUrl, oracleName }: { imageUrl: string | null; orac
             onClick={() => {}}
             size={[88, 78]}
             viewBox="-55 -55 110 88"
+            forceSvg
           />
         )}
       </div>
@@ -267,7 +268,7 @@ function GalleryGrid({ gallery, selectedId, oracleName, onSelect, onUseSvg }: {
           onClick={onUseSvg}
           title="Use procedural SVG"
         >
-          <AgentAvatar name={oracleName} target="maw:0" status="ready" preview="" accent="#89b4fa" onClick={() => {}} size={[40, 36]} viewBox="-55 -55 110 88" />
+          <AgentAvatar name={oracleName} target="maw:0" status="ready" preview="" accent="#89b4fa" onClick={() => {}} size={[40, 36]} viewBox="-55 -55 110 88" forceSvg />
         </button>
 
         {gallery.map(entry => (

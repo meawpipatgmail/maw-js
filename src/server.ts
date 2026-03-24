@@ -370,6 +370,12 @@ app.get("/api/avatar/gallery/:name", handleGallery);
 app.post("/api/avatar/select", handleSelect);
 app.get("/api/avatar/all", handleAll);
 
+// Serve locally-saved avatar images
+app.get("/api/avatar/images/*", serveStatic({
+  root: "./",
+  rewriteRequestPath: (p) => p.replace(/^\/api\/avatar\/images/, "/data/avatars/images"),
+}));
+
 // --- Worktree Hygiene ---
 import { scanWorktrees, cleanupWorktree } from "./worktrees";
 

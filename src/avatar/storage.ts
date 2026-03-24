@@ -5,10 +5,30 @@ import type { AvatarFields } from "./refine";
 
 const AVATARS_DIR = join(import.meta.dir, "../../data/avatars");
 const JOBS_DIR = join(AVATARS_DIR, "jobs");
+const IMAGES_DIR = join(AVATARS_DIR, "images");
 
 function ensureDirs() {
   if (!existsSync(JOBS_DIR)) mkdirSync(JOBS_DIR, { recursive: true });
   if (!existsSync(AVATARS_DIR)) mkdirSync(AVATARS_DIR, { recursive: true });
+  if (!existsSync(IMAGES_DIR)) mkdirSync(IMAGES_DIR, { recursive: true });
+}
+
+/**
+ * Download image from a remote URL (e.g. Tensor Art presigned URL) and save locally.
+ * Returns the API-relative path for serving: `/api/avatar/images/{jobId}.png`
+ */
+export async function downloadImage(imageUrl: string, jobId: string): Promise<string> {
+  ensureDirs();
+  const res = await fetch(imageUrl);
+  if (!res.ok) {
+    throw new Error(`Failed to download image: ${res.status} ${res.statusText}`);
+  }
+  const buffer = Buffer.from(await res.arrayBuffer());
+  const filename = `${jobId}.png`;
+  const filePath = join(IMAGES_DIR, filename);
+  writeFileSync(filePath, buffer);
+  console.log(`[avatar] saved image: ${filePath} (${buffer.length} bytes)`);
+  return `/api/avatar/images/${filename}`;
 }
 
 function sanitizeName(name: string): string {
