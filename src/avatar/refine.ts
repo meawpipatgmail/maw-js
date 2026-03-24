@@ -1,3 +1,6 @@
+import type { AvatarStyle } from "./models";
+import { getQualityPrefix, getNegativePrefix, getRaceHint, AVATAR_POSE, AVATAR_NEGATIVE_SUFFIX } from "./models";
+
 export interface AvatarFields {
   sex: string;
   race: string;
@@ -8,6 +11,7 @@ export interface AvatarFields {
   bodyType: string;
   expression: string;
   appearance: string;
+  style: AvatarStyle; // "chibi" | "anime" | "realistic"
 }
 
 export interface RefinedPrompt {
@@ -19,18 +23,6 @@ export interface ValidationResult {
   valid: boolean;
   reason: string;
 }
-
-const userMessage = (fields: AvatarFields) => `Character fields:
-- Sex: ${fields.sex}
-- Race: ${fields.race}
-- Skin Tone: ${fields.skinTone}
-- Eye Color: ${fields.eyeColor}
-- Hair: ${fields.hairColor}, ${fields.hairStyle}
-- Body Type: ${fields.bodyType}
-- Expression: ${fields.expression}
-- Additional appearance: ${fields.appearance}
-
-Generate an optimized TensorArt prompt for this character as a sprite with transparent background.`;
 
 async function callGrok(system: string, user: string): Promise<string> {
   const key = process.env.XAI_API_KEY;
@@ -62,40 +54,91 @@ async function callGrok(system: string, user: string): Promise<string> {
 }
 
 function parseJson<T>(text: string): T {
-  // Try to extract JSON from text (LLM may add preamble/code block)
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) throw new Error(`No JSON found in response: ${text}`);
   return JSON.parse(jsonMatch[0]) as T;
 }
 
-export async function refinePrompt(fields: AvatarFields, sfw: boolean): Promise<RefinedPrompt> {
-  const user = userMessage(fields);
+function buildUserMessage(fields: AvatarFields): string {
+  const raceHint = getRaceHint(fields.race);
 
-  if (sfw) {
-    const system = `You are an anime avatar prompt engineer for TensorArt.
-Generate a safe-for-work chibi/anime character sprite prompt.
-Keep the character fully clothed and appropriate for all audiences.
+  const styleLabel = {
+    chibi: "Anime Chibi (cute, small proportions, big head, big eyes)",
+    anime: "Anime (detailed 2D illustration, standard proportions)",
+    realistic: "Realistic (photorealistic, natural proportions)",
+  }[fields.style];
+
+  // For realistic style, omit blush-related terms
+  const realisticNote = fields.style === "realistic"
+    ? "\nIMPORTANT: Do NOT use 'red cheeks', 'blushing', 'blush', 'rosy cheeks'. Use 'gentle smile', 'soft gaze' instead."
+    : "";
+
+  return `Character fields:
+- Style: ${styleLabel}
+- Sex: ${fields.sex}
+- Race: ${fields.race} (${raceHint})
+- Skin Tone: ${fields.skinTone}
+- Eye Color: ${fields.eyeColor}
+- Hair: ${fields.hairColor}, ${fields.hairStyle}
+- Body Type: ${fields.bodyType}
+- Expression: ${fields.expression}
+- Additional appearance: ${fields.appearance}
+
+Describe ONLY the character's appearance (sex tag + physical traits + outfit + accessories).
+Include sex tag (1girl/1boy/1person) at the start.
+Do NOT include quality tags, pose, background, or lighting — those are handled separately.
+${realisticNote}
+
 Output JSON: { "prompt": "...", "negativePrompt": "..." }`;
-    const text = await callGrok(system, user);
-    return parseJson<RefinedPrompt>(text);
-  } else {
-    const system = `You are an anime avatar prompt engineer for TensorArt.
-Generate an anime character sprite prompt.
-Output JSON: { "prompt": "...", "negativePrompt": "..." }`;
-    const text = await callGrok(system, user);
-    return parseJson<RefinedPrompt>(text);
-  }
+}
+
+export async function refinePrompt(
+  fields: AvatarFields,
+  sfw: boolean,
+  modelBase: string,
+): Promise<RefinedPrompt> {
+  const sfwNote = sfw
+    ? "IMPORTANT: Output is SAFE FOR WORK. Character must be fully clothed and appropriate for all audiences."
+    : "Mature content is permitted if appropriate for the character.";
+
+  const system = `You are an expert AI art prompt engineer for TensorArt image generation.
+Describe ONLY the character's appearance based on the fields provided.
+${sfwNote}
+Output valid JSON only: { "prompt": "...", "negativePrompt": "..." }
+For negativePrompt, describe appearance-specific negatives only (bad anatomy, wrong features, etc).
+Do NOT include quality tags, background, or pose terms — those are handled separately.
+NO markdown. NO explanations. JUST the JSON.`;
+
+  const user = buildUserMessage(fields);
+  const text = await callGrok(system, user);
+  const parsed = parseJson<RefinedPrompt>(text);
+
+  // Inject quality tags programmatically — not trusted to the LLM
+  const qualityPrefix = getQualityPrefix(modelBase);
+  const posePrefix = AVATAR_POSE[fields.style];
+  const negativeBase = getNegativePrefix(modelBase);
+
+  return {
+    prompt: `${qualityPrefix}, ${posePrefix}, ${parsed.prompt}`,
+    negativePrompt: `${negativeBase}, ${parsed.negativePrompt}, ${AVATAR_NEGATIVE_SUFFIX}`,
+  };
 }
 
 export async function validatePrompt(prompt: string, sfw: boolean): Promise<ValidationResult> {
-  const system = `You are a content safety validator for image generation prompts.
-Check if the given prompt is appropriate given the SFW setting.
-Output JSON: { "valid": boolean, "reason": string }`;
+  const system = sfw
+    ? `You are a content safety validator for image generation prompts.
+The prompt must be SAFE FOR WORK. Reject any sexual, explicit, suggestive, or NSFW content.
+Reject prompts containing: nudity, sexual poses, revealing clothing emphasis, sexual innuendo.
+Output JSON only: { "valid": boolean, "reason": string }`
+    : `You are a content safety validator for image generation prompts.
+This is NSFW mode. Adult, sexual, and mature content is FULLY ALLOWED and should be marked valid.
+ONLY reject content that is illegal or depicts minors.
+Output JSON only: { "valid": boolean, "reason": string }`;
 
-  const user = `SFW: ${sfw}
-Prompt: ${prompt}`;
+  const user = `Prompt: ${prompt}`;
 
-  // Always use Claude for validation (SFW check is safe for Claude)
+  // console.log(`[validatePrompt] sfw=${sfw}`);
+  // console.log(user);
   const text = await callGrok(system, user);
   return parseJson<ValidationResult>(text);
 }

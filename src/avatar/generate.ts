@@ -3,6 +3,7 @@ import { refinePrompt, validatePrompt } from "./refine";
 import type { AvatarFields } from "./refine";
 import { submitJob, pollUntilDone } from "./tensorart";
 import { saveJob, updateJob, saveAvatarFromJob, downloadImage } from "./storage";
+import { getModelForStyle } from "./models";
 
 export async function handleGenerate(c: Context) {
   let body: { name: string; fields: AvatarFields; sfw: boolean };
@@ -17,10 +18,15 @@ export async function handleGenerate(c: Context) {
     return c.json({ error: "name and fields required" }, 400);
   }
 
-  // LLM refinement
+  // Resolve model based on style
+  const style = fields.style ?? "chibi";
+  const model = getModelForStyle(style);
+
+  // LLM refinement — pass model.base for quality prefix selection
   let refined: { prompt: string; negativePrompt: string };
   try {
-    refined = await refinePrompt(fields, sfw ?? true);
+    refined = await refinePrompt(fields, sfw ?? true, model.base);
+    console.log(refined);
   } catch (e: any) {
     return c.json({ error: `Refinement failed: ${e.message}` }, 500);
   }
@@ -37,10 +43,10 @@ export async function handleGenerate(c: Context) {
     return c.json({ valid: false, reason: validation.reason });
   }
 
-  // Submit to TensorArt
+  // Submit to TensorArt with model config
   let jobId: string;
   try {
-    jobId = await submitJob(refined.prompt, refined.negativePrompt);
+    jobId = await submitJob(refined.prompt, refined.negativePrompt, model);
   } catch (e: any) {
     return c.json({ error: `TensorArt submit failed: ${e.message}` }, 500);
   }
@@ -64,7 +70,7 @@ async function processJob(jobId: string, name: string, fields: AvatarFields) {
       console.log(`[avatar] job ${jobId} image saved locally: ${localPath}`);
     } catch (dlErr: any) {
       console.error(`[avatar] job ${jobId} image download failed: ${dlErr.message}, using remote URL`);
-      localPath = remoteUrl; // fallback to remote URL if download fails
+      localPath = remoteUrl;
     }
 
     updateJob(jobId, { status: "done", imageUrl: localPath });

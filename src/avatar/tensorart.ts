@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import type { AvatarModel } from "./models";
 
 const BASE_URL = "https://ap-east-1.tensorart.cloud/v1";
 
@@ -11,6 +12,7 @@ function getKey(): string {
 export async function submitJob(
   prompt: string,
   negativePrompt: string,
+  model: AvatarModel,
 ): Promise<string> {
   const body = {
     request_id: randomUUID(),
@@ -22,15 +24,15 @@ export async function submitJob(
       {
         type: "DIFFUSION",
         diffusion: {
-          width: 512,
-          height: 768,
+          width: model.width,
+          height: model.height,
           prompts: [{ text: prompt }],
           negativePrompts: [{ text: negativePrompt }],
-          sdModel: "977348956268792231", // Counterfeit-V3.0 (anime/chibi)
-          sdVae: "sdxl_vae.safetensors",
-          steps: 25,
-          cfgScale: 7,
-          sampler: "DPM++ 2M Karras",
+          sdModel: model.id,
+          sdVae: model.vae,
+          steps: model.steps,
+          cfgScale: model.cfgScale,
+          sampler: model.sampler,
         },
       },
     ],

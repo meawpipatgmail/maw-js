@@ -16,6 +16,7 @@ interface AvatarFields {
   bodyType: string;
   expression: string;
   appearance: string;
+  style: string;
 }
 
 interface AvatarFormState extends AvatarFields {
@@ -38,18 +39,19 @@ interface GalleryEntry {
 // ---- Field definitions ----
 
 const FIELDS: { key: keyof AvatarFields; label: string; presets: string[] }[] = [
+  { key: "style", label: "Style", presets: ["chibi", "anime", "realistic"] },
   { key: "sex", label: "Sex", presets: ["Male", "Female", "Non-binary"] },
   { key: "race", label: "Race", presets: ["Human", "Robot", "Demon", "Alien"] },
   { key: "skinTone", label: "Skin Tone", presets: ["Fair", "Tan", "Dark", "Blue", "Purple", "Green"] },
   { key: "eyeColor", label: "Eye Color", presets: ["Brown", "Blue", "Red", "Gold", "Glowing White", "Purple"] },
   { key: "hairColor", label: "Hair Color", presets: ["Black", "White", "Silver", "Brown", "Blue", "Pink", "Rainbow"] },
   { key: "hairStyle", label: "Hair Style", presets: ["Short", "Long", "Ponytail", "Bob", "Braided", "Wild"] },
-  { key: "bodyType", label: "Body Type", presets: ["Slim", "Average", "Chibi", "Muscular"] },
+  { key: "bodyType", label: "Body Type", presets: ["Slim", "Average", "Muscular"] },
   { key: "expression", label: "Expression", presets: ["Cheerful", "Calm", "Focused", "Mysterious", "Mischievous"] },
 ];
 
 const DEFAULTS: AvatarFormState = {
-  sex: "", race: "", skinTone: "", eyeColor: "",
+  style: "chibi", sex: "", race: "", skinTone: "", eyeColor: "",
   hairColor: "", hairStyle: "", bodyType: "", expression: "",
   appearance: "", sfw: true,
 };
@@ -585,8 +587,8 @@ export function AvatarPage({ agents }: { agents: AgentState[] }) {
           style={{ background: form.sfw ? "#4caf50" : "#ef5350", cursor: locked ? "not-allowed" : "pointer" }}
           onClick={() => !locked && setField("sfw", !form.sfw)}
         >
-          <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"
-            style={{ transform: form.sfw ? "translateX(2px)" : "translateX(26px)" }}
+          <span className="absolute left-0 top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"
+            style={{ transform: form.sfw ? "translateX(26px)" : "translateX(2px)" }}
           />
         </button>
         <span className="text-[12px] font-mono" style={{ color: form.sfw ? "#4caf50" : "#ef5350" }}>
