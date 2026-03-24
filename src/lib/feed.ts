@@ -60,8 +60,9 @@ export function parseLine(line: string): FeedEvent | null {
     sessionId = rest.trim();
   }
 
-  // Parse timestamp to epoch ms
-  const ts = new Date(timestamp.replace(" ", "T") + "+07:00").getTime();
+  // Parse timestamp to epoch ms — handle both "2026-03-24T08:11:18" (local) and "2026-03-24T08:11:18Z" (UTC)
+  const normalized = /Z$/.test(timestamp) ? timestamp : timestamp.replace(" ", "T") + "+07:00";
+  const ts = new Date(normalized).getTime();
   if (isNaN(ts)) return null;
 
   return { timestamp, oracle, host, event, project, sessionId, message, ts };

@@ -9,6 +9,7 @@ export interface MawConfig {
   env: Record<string, string>;
   commands: Record<string, string>;
   sessions: Record<string, string>;
+  oracles: Record<string, string>; // oracle name → repo path
 }
 
 const DEFAULTS: MawConfig = {
@@ -19,6 +20,7 @@ const DEFAULTS: MawConfig = {
   env: {},
   commands: { default: "claude" },
   sessions: {},
+  oracles: {},
 };
 
 let cached: MawConfig | null = null;

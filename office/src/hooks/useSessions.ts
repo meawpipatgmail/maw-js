@@ -63,7 +63,9 @@ export function useSessions() {
     const oracleLower = event.oracle.toLowerCase();
     const oracleMain = oracleLower.endsWith("-oracle") ? oracleLower : `${oracleLower}-oracle`;
     return agentsRef.current.find(a => a.name.toLowerCase() === oracleMain)
-      || agentsRef.current.find(a => a.name.toLowerCase() === oracleLower);
+      || agentsRef.current.find(a => a.name.toLowerCase() === oracleLower)
+      // Fallback: match by session name (handles Claude Code renaming window to version string e.g. "2.1.81")
+      || agentsRef.current.find(a => a.session.toLowerCase() === oracleLower);
   }, []);
 
   const updateStatusFromFeed = useCallback((event: FeedEvent) => {
@@ -240,9 +242,12 @@ export function useSessions() {
           const wtMatch = base.match(/[.-]wt-(?:\d+-)?(.+)$/);
           project = wtMatch ? `wt:${wtMatch[1]}` : base;
         }
+        // Normalize version-string window names (e.g. "2.1.81") to "<session>-oracle"
+        // Claude Code renames tmux windows to its version string — use session name instead
+        const agentName = /^\d+\.\d+/.test(w.name) ? `${s.name}-oracle` : w.name;
         return {
           target: key,
-          name: w.name,
+          name: agentName,
           session: s.name,
           windowIndex: w.index,
           active: w.active,
@@ -263,9 +268,8 @@ export function useSessions() {
     const map = new Map<string, FeedEvent[]>();
     for (let i = feedEvents.length - 1; i >= 0; i--) {
       const e = feedEvents[i];
-      // Resolve to specific agent (worktree-aware) instead of raw oracle name
-      const agent = agentsRef.current.length > 0 ? resolveAgentFromFeed(e) : undefined;
-      const key = agent ? agent.name.replace(/-oracle$/, "") : e.oracle;
+      // Key by oracle name (lowercase) — consistent regardless of window renaming or load timing
+      const key = e.oracle.toLowerCase();
       const arr = map.get(key) || [];
       if (arr.length < 5) { arr.push(e); map.set(key, arr); }
     }

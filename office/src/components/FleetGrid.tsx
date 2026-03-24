@@ -247,14 +247,17 @@ export const FleetGrid = memo(function FleetGrid({
   }, [sorted, sessionAgents]);
 
   // Resolve per-agent feed log — primary oracle + worktree windows
-  const getAgentFeedLog = useCallback((agentName: string): FeedLogEntry[] | null => {
+  const getAgentFeedLog = useCallback((agentName: string, sessionName?: string): FeedLogEntry[] | null => {
     if (!agentFeedLog) return null;
-    const oracleName = agentName.replace(/-oracle$/, "");
-    const events = agentFeedLog.get(oracleName);
+    // Look up by session name (oracle key) — handles version-string window names like "2.1.81"
+    const lookupKey = (sessionName || agentName).replace(/-oracle$/, "").toLowerCase();
+    const events = agentFeedLog.get(lookupKey);
     if (!events || events.length === 0) return null;
     // For worktree windows (e.g. "homekeeper-statusline"), filter to matching project
+    // Version strings (e.g. "2.1.81") are main oracle windows, not worktrees
     const suffix = agentName.replace(/^[^-]+-/, ""); // "statusline" from "homekeeper-statusline"
-    const isWorktree = !agentName.endsWith("-oracle");
+    const isVersionString = /^\d+\.\d+/.test(agentName);
+    const isWorktree = !isVersionString && !agentName.endsWith("-oracle");
     const filtered = isWorktree
       ? events.filter(e => e.project.includes(suffix))
       : events;
@@ -364,7 +367,7 @@ export const FleetGrid = memo(function FleetGrid({
                 return (
                   <AgentRow key={`recent-${entry.target}`} agent={agent} accent={rs.accent} roomLabel={rs.label}
                     isLast={i === recentlyActive.length - 1}
-                    featured={i === 0} agoLabel={agoLabel} feedLog={getAgentFeedLog(agent.name)}
+                    featured={i === 0} agoLabel={agoLabel} feedLog={getAgentFeedLog(agent.name, agent.session)}
                     slept={sleptTargets.includes(entry.target)} alignWidth={96}
                     observe={observe} showPreview={showPreview} hidePreview={hidePreview} onAgentClick={onAgentClick}
                     send={send} onSendDone={onSendDone} />
@@ -412,7 +415,7 @@ export const FleetGrid = memo(function FleetGrid({
                   {vr.agents.map((agent, i) => (
                     <AgentRow key={agent.target} agent={agent} accent={style.accent} roomLabel={vr.label}
                       isLast={i === vr.agents.length - 1}
-                      feedLog={getAgentFeedLog(agent.name)}
+                      feedLog={getAgentFeedLog(agent.name, agent.session)}
                       slept={sleptTargets.includes(agent.target)}
                       observe={observe} showPreview={showPreview} hidePreview={hidePreview} onAgentClick={onAgentClick}
                       send={send} onSendDone={onSendDone} />

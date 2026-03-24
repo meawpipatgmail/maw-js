@@ -60,6 +60,16 @@ export async function fetchIssuePrompt(issueNum: number, repo?: string): Promise
 }
 
 export async function resolveOracle(oracle: string): Promise<{ repoPath: string; repoName: string; parentDir: string }> {
+  // 0. Check explicit mapping in maw.config.json oracles field
+  const oraclesMap = loadConfig().oracles || {};
+  const mappedPath = oraclesMap[oracle] || oraclesMap[oracle.toLowerCase()];
+  if (mappedPath) {
+    const repoPath = mappedPath.replace(/^~/, process.env.HOME || "");
+    const repoName = repoPath.split("/").pop()!;
+    const parentDir = repoPath.replace(/\/[^/]+$/, "");
+    return { repoPath, repoName, parentDir };
+  }
+
   // 1. Try standard pattern: <oracle>-oracle
   const ghqOut = await ssh(`ghq list --full-path | grep -i '/${oracle}-oracle$' | head -1`);
   if (ghqOut?.trim()) {
@@ -86,6 +96,17 @@ export async function resolveOracle(oracle: string): Promise<{ repoPath: string;
       }
     }
   } catch { /* fleet dir may not exist */ }
+
+  // 3. Fallback: use existing tmux session's cwd (handles non-standard repo names)
+  try {
+    const sessionCwd = await ssh(`tmux display-message -t '${oracle}' -p '#{pane_current_path}' 2>/dev/null`);
+    if (sessionCwd?.trim()) {
+      const repoPath = sessionCwd.trim();
+      const repoName = repoPath.split("/").pop()!;
+      const parentDir = repoPath.replace(/\/[^/]+$/, "");
+      return { repoPath, repoName, parentDir };
+    }
+  } catch { /* session may not exist */ }
 
   console.error(`oracle repo not found: ${oracle} (tried ${oracle}-oracle pattern and fleet configs)`);
   process.exit(1);
@@ -146,9 +167,13 @@ export async function detectSession(oracle: string): Promise<string | null> {
 }
 
 /** Set config env vars on a tmux session (hidden from screen output) */
-async function setSessionEnv(session: string): Promise<void> {
+async function setSessionEnv(session: string, oracle?: string): Promise<void> {
   for (const [key, val] of Object.entries(getEnvVars())) {
     await tmux.setEnvironment(session, key, val);
+  }
+  // Inject CLAUDE_AGENT_NAME so hooks.ts and oracle-feed.sh can identify the oracle
+  if (oracle) {
+    await tmux.setEnvironment(session, "CLAUDE_AGENT_NAME", oracle);
   }
 }
 
@@ -162,7 +187,7 @@ export async function cmdWake(oracle: string, opts: { task?: string; newWt?: str
     // Create session with main window (use oracle-oracle name to match fleet configs)
     const mainWindowName = `${oracle}-oracle`;
     await tmux.newSession(session, { window: mainWindowName, cwd: repoPath });
-    await setSessionEnv(session);
+    await setSessionEnv(session, oracle);
     await new Promise(r => setTimeout(r, 300));
     await tmux.sendText(`${session}:${mainWindowName}`, buildCommand(mainWindowName));
     console.log(`\x1b[32m+\x1b[0m created session '${session}' (main: ${mainWindowName})`);
@@ -182,7 +207,7 @@ export async function cmdWake(oracle: string, opts: { task?: string; newWt?: str
     }
   } else {
     // Ensure env vars are set on existing session (may predate this fix)
-    await setSessionEnv(session);
+    await setSessionEnv(session, oracle);
 
     // Respawn missing worktree windows (e.g. after reboot)
     if (!opts.task && !opts.newWt) {
