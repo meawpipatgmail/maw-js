@@ -56,14 +56,12 @@ export function saveJob(jobId: string, data: Partial<JobState> & { oracleName: s
   const now = new Date().toISOString();
   const existing = loadJob(jobId);
   const state: JobState = {
+    ...data,
     jobId,
     oracleName: data.oracleName,
     status: data.status || "pending",
-    imageUrl: data.imageUrl,
-    error: data.error,
     createdAt: existing?.createdAt || now,
     updatedAt: now,
-    ...data,
   };
   writeFileSync(path, JSON.stringify(state, null, 2));
   return state;

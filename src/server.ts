@@ -202,7 +202,7 @@ app.get("/api/config-files", (c) => {
       const enabled = !f.endsWith(".disabled");
       files.push({ name: f, path: `fleet/${f}`, enabled });
     }
-  } catch {}
+  } catch { }
   return c.json({ files });
 });
 
@@ -511,8 +511,6 @@ import { MAW_LOG_PATH } from "./maw-log";
 
 import { describeActivity } from "./lib/feed";
 
-import { describeActivity } from "./lib/feed";
-
 function statusHeartbeat() {
   try {
     const cutoff = Date.now() - 15 * 60_000;
@@ -541,7 +539,7 @@ function statusHeartbeat() {
 
     // Token rate for the same window
     const rate = realtimeRate(15 * 60);
-    const fmt = (n: number) => n >= 1e9 ? `${(n/1e9).toFixed(1)}B` : n >= 1e6 ? `${(n/1e6).toFixed(1)}M` : n >= 1e3 ? `${(n/1e3).toFixed(1)}K` : `${n}`;
+    const fmt = (n: number) => n >= 1e9 ? `${(n / 1e9).toFixed(1)}B` : n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${(n / 1e3).toFixed(1)}K` : `${n}`;
 
     // Build readable multiline
     const lines = [...byParent.entries()]
@@ -559,7 +557,7 @@ function statusHeartbeat() {
     }) + "\n";
 
     appendFileSync(MAW_LOG_PATH, entry);
-  } catch {}
+  } catch { }
 }
 
 // Auto-start unless imported by CLI (CLI sets MAW_CLI=1)
