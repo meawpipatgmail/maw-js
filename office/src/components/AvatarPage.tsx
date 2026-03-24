@@ -221,7 +221,7 @@ function AvatarDisplay({ imageUrl, oracleName }: { imageUrl: string | null; orac
         style={{ background: "#1a1a24", borderColor: imageUrl ? "#89b4fa44" : "#ffffff15" }}
       >
         {imageUrl ? (
-          <img src={imageUrl} alt="avatar" className="w-full h-full object-cover" />
+          <img src={imageUrl} alt="avatar" className="w-full h-full object-cover object-top" />
         ) : (
           <AgentAvatar
             name={oracleName || "oracle"}
@@ -327,7 +327,7 @@ function GalleryGrid({ gallery, selectedId, oracleName, onSelect, onUseSvg, onDe
               onClick={() => onSelect(entry.id)}
               title={new Date(entry.createdAt).toLocaleString()}
             >
-              <img src={entry.imageUrl} alt="avatar" className="w-full h-full object-cover" />
+              <img src={entry.imageUrl} alt="avatar" className="w-full h-full object-cover object-top" />
               {selectedId === entry.id && (
                 <div className="absolute inset-0 flex items-end justify-center pb-1" style={{ background: "#89b4fa22" }}>
                   <span className="text-[9px] font-mono text-[#89b4fa] bg-black/60 px-1 rounded">active</span>
