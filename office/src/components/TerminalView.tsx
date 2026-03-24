@@ -384,17 +384,10 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
           className="flex-1 overflow-y-auto px-3 py-2 font-mono text-[11px] sm:text-[13px] leading-[1.35] relative"
           style={{ background: "#0a0a0f", whiteSpace: "pre", wordBreak: "normal", overflowX: "auto", color: "#aaa" }}
         >
-          {captureHtml ? (
-            <div dangerouslySetInnerHTML={{ __html: captureHtml }} />
-          ) : (
-            <div className="text-white/15 text-center mt-[30vh] text-sm">
-              {selectedTarget ? "connecting..." : "select a window \u2190"}
-            </div>
-          )}
           {/* === MOBILE: Ghost overlay === */}
           {avatarImageUrl && (
             <div
-              className="sm:hidden pointer-events-none fixed bottom-[55px] right-0 max-w-full w-[160px]"
+              className="sm:hidden pointer-events-none fixed bottom-[55px] right-0 max-w-full w-[160px] opacity-50"
             >
               <img
                 src={avatarImageUrl}
@@ -408,6 +401,13 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
                   display: "block",
                 }}
               />
+            </div>
+          )}
+          {captureHtml ? (
+            <div className="relative" dangerouslySetInnerHTML={{ __html: captureHtml }} />
+          ) : (
+            <div className="relative text-white/15 text-center mt-[30vh] text-sm">
+              {selectedTarget ? "connecting..." : "select a window \u2190"}
             </div>
           )}
         </div>
