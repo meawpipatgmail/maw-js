@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { AgentAvatar } from "./AgentAvatar";
 import { apiUrl } from "../lib/api";
+import { useFleetStore } from "../lib/store";
 import type { AgentState } from "../lib/types";
 
 // ---- Types ----
@@ -302,6 +303,15 @@ export function AvatarPage({ agents }: { agents: AgentState[] }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [gallery, setGallery] = useState<GalleryEntry[]>([]);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const setAvatarUrls = useFleetStore((s) => s.setAvatarUrls);
+
+  /** Re-fetch global avatar URLs so other pages update immediately */
+  const refreshGlobalAvatars = useCallback(() => {
+    fetch(apiUrl("/api/avatar/all"))
+      .then(r => r.json())
+      .then((data: Record<string, string | null>) => setAvatarUrls(data))
+      .catch(() => {});
+  }, [setAvatarUrls]);
 
   const fetchGallery = useCallback((name: string) => {
     fetch(apiUrl(`/api/avatar/gallery/${encodeURIComponent(name)}`))
@@ -402,9 +412,10 @@ export function AvatarPage({ agents }: { agents: AgentState[] }) {
       if (data.ok) {
         setCurrentImageUrl(data.imageUrl);
         setSelectedId(data.selectedId);
+        refreshGlobalAvatars();
       }
     } catch {}
-  }, [selectedOracle]);
+  }, [selectedOracle, refreshGlobalAvatars]);
 
   const handleUseSvg = useCallback(async () => {
     if (!selectedOracle) return;
@@ -418,9 +429,10 @@ export function AvatarPage({ agents }: { agents: AgentState[] }) {
       if (data.ok) {
         setCurrentImageUrl(null);
         setSelectedId(null);
+        refreshGlobalAvatars();
       }
     } catch {}
-  }, [selectedOracle]);
+  }, [selectedOracle, refreshGlobalAvatars]);
 
   const locked = !selectedOracle;
   const leftFields = FIELDS.slice(0, 4);
