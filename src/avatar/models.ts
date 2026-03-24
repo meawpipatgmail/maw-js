@@ -21,8 +21,8 @@ export const AVATAR_MODELS: Record<AvatarStyle, AvatarModel> = {
     vae: "sdxl_vae.safetensors",
     steps: 30,
     cfgScale: 5,
-    width: 512,
-    height: 768,
+    width: 768,
+    height: 1152,
   },
   anime: {
     id: "977348956268792231",
@@ -32,8 +32,8 @@ export const AVATAR_MODELS: Record<AvatarStyle, AvatarModel> = {
     vae: "sdxl_vae.safetensors",
     steps: 30,
     cfgScale: 5,
-    width: 512,
-    height: 768,
+    width: 768,
+    height: 1152,
   },
   realistic: {
     id: "956280112309918550",
@@ -43,8 +43,8 @@ export const AVATAR_MODELS: Record<AvatarStyle, AvatarModel> = {
     vae: "Automatic",
     steps: 8,
     cfgScale: 1,
-    width: 512,
-    height: 768,
+    width: 768,
+    height: 1152,
   },
 };
 
@@ -83,10 +83,10 @@ export const AVATAR_NEGATIVE_SUFFIX =
 // ---- Race-specific prompt hints for Grok ----
 
 export const RACE_HINTS: Record<string, string> = {
-  robot:   "The character is a robot/android. Replace skin tone with metallic plating color. Use terms like 'mechanical body', 'glowing eyes', 'metal chassis', 'circuitry'. Omit hair if not specified.",
-  alien:   "The character is an alien. Skin color may be unusual (blue, green, purple, etc.). Use terms like 'alien features', 'bioluminescent markings', 'otherworldly'. May have unusual anatomy.",
-  demon:   "The character is a demon. May have horns, tail, unusual skin color. Use terms like 'demonic', 'dark energy', 'glowing eyes', 'sinister aura'.",
-  human:   "The character is human. Use natural skin tone and hair descriptions.",
+  robot: "The character is a robot/android. Replace skin tone with metallic plating color. Use terms like 'mechanical body', 'glowing eyes', 'metal chassis', 'circuitry'. Omit hair if not specified.",
+  alien: "The character is an alien. Skin color may be unusual (blue, green, purple, etc.). Use terms like 'alien features', 'bioluminescent markings', 'otherworldly'. May have unusual anatomy.",
+  demon: "The character is a demon. May have horns, tail, unusual skin color. Use terms like 'demonic', 'dark energy', 'glowing eyes', 'sinister aura'.",
+  human: "The character is human. Use natural skin tone and hair descriptions.",
   default: "Describe the character's physical appearance faithfully.",
 };
 
