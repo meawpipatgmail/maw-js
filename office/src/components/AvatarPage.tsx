@@ -241,15 +241,50 @@ function AvatarDisplay({ imageUrl, oracleName }: { imageUrl: string | null; orac
   );
 }
 
+// ---- ConfirmModal ----
+
+function ConfirmModal({ message, onConfirm, onCancel }: {
+  message: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.7)" }}>
+      <div className="rounded-2xl border border-white/10 shadow-2xl p-6 flex flex-col gap-4 w-72" style={{ background: "#16161f" }}>
+        <p className="text-[13px] font-mono text-white/80 text-center leading-relaxed">{message}</p>
+        <div className="flex gap-2 justify-center">
+          <button
+            className="px-4 py-1.5 rounded-lg text-[12px] font-mono transition-colors"
+            style={{ background: "#ef535020", color: "#ef5350", border: "1px solid #ef535040" }}
+            onClick={onConfirm}
+          >
+            Delete
+          </button>
+          <button
+            className="px-4 py-1.5 rounded-lg text-[12px] font-mono transition-colors text-white/50 hover:text-white/80"
+            style={{ background: "#ffffff08", border: "1px solid #ffffff15" }}
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ---- GalleryGrid ----
 
-function GalleryGrid({ gallery, selectedId, oracleName, onSelect, onUseSvg }: {
+function GalleryGrid({ gallery, selectedId, oracleName, onSelect, onUseSvg, onDelete }: {
   gallery: GalleryEntry[];
   selectedId: string | null;
   oracleName: string;
   onSelect: (id: string) => void;
   onUseSvg: () => void;
+  onDelete: (id: string) => void;
 }) {
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+
   if (gallery.length === 0) return (
     <div className="mb-6 text-[11px] text-white/20 font-mono text-center py-4">
       No avatars generated yet for {oracleName}
@@ -258,6 +293,13 @@ function GalleryGrid({ gallery, selectedId, oracleName, onSelect, onUseSvg }: {
 
   return (
     <div className="mb-6">
+      {confirmId && (
+        <ConfirmModal
+          message="Delete this avatar? This cannot be undone."
+          onConfirm={() => { onDelete(confirmId); setConfirmId(null); }}
+          onCancel={() => setConfirmId(null)}
+        />
+      )}
       <div className="text-[11px] text-white/30 font-mono uppercase tracking-widest mb-2">
         Gallery — click to use
       </div>
@@ -273,20 +315,33 @@ function GalleryGrid({ gallery, selectedId, oracleName, onSelect, onUseSvg }: {
         </button>
 
         {gallery.map(entry => (
-          <button
+          <div
             key={entry.id}
-            className="relative aspect-square rounded-xl border-2 overflow-hidden transition-all group"
+            className="relative aspect-square rounded-xl border-2 overflow-hidden group"
             style={{ borderColor: selectedId === entry.id ? "#89b4fa" : "#ffffff15", background: "#0f0f18" }}
-            onClick={() => onSelect(entry.id)}
-            title={new Date(entry.createdAt).toLocaleString()}
           >
-            <img src={entry.imageUrl} alt="avatar" className="w-full h-full object-cover" />
-            {selectedId === entry.id && (
-              <div className="absolute inset-0 flex items-end justify-center pb-1" style={{ background: "#89b4fa22" }}>
-                <span className="text-[9px] font-mono text-[#89b4fa] bg-black/60 px-1 rounded">active</span>
-              </div>
-            )}
-          </button>
+            <button
+              className="absolute inset-0 w-full h-full"
+              onClick={() => onSelect(entry.id)}
+              title={new Date(entry.createdAt).toLocaleString()}
+            >
+              <img src={entry.imageUrl} alt="avatar" className="w-full h-full object-cover" />
+              {selectedId === entry.id && (
+                <div className="absolute inset-0 flex items-end justify-center pb-1" style={{ background: "#89b4fa22" }}>
+                  <span className="text-[9px] font-mono text-[#89b4fa] bg-black/60 px-1 rounded">active</span>
+                </div>
+              )}
+            </button>
+            {/* Delete button — visible on hover */}
+            <button
+              className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+              style={{ background: "#ef535090", color: "#fff", fontSize: 10 }}
+              onClick={(e) => { e.stopPropagation(); setConfirmId(entry.id); }}
+              title="Delete avatar"
+            >
+              ×
+            </button>
+          </div>
         ))}
       </div>
     </div>
@@ -417,6 +472,25 @@ export function AvatarPage({ agents }: { agents: AgentState[] }) {
     } catch {}
   }, [selectedOracle, refreshGlobalAvatars]);
 
+  const handleDeleteEntry = useCallback(async (entryId: string) => {
+    if (!selectedOracle) return;
+    try {
+      const res = await fetch(apiUrl(`/api/avatar/gallery/${encodeURIComponent(selectedOracle)}/${encodeURIComponent(entryId)}`), {
+        method: "DELETE",
+      });
+      const data = await res.json() as { ok: boolean };
+      if (data.ok) {
+        setGallery(g => g.filter(e => e.id !== entryId));
+        // If deleted entry was active, clear selection locally
+        if (selectedId === entryId) {
+          setCurrentImageUrl(null);
+          setSelectedId(null);
+        }
+        refreshGlobalAvatars();
+      }
+    } catch {}
+  }, [selectedOracle, selectedId, refreshGlobalAvatars]);
+
   const handleUseSvg = useCallback(async () => {
     if (!selectedOracle) return;
     try {
@@ -456,6 +530,7 @@ export function AvatarPage({ agents }: { agents: AgentState[] }) {
           oracleName={selectedOracle}
           onSelect={handleSelectEntry}
           onUseSvg={handleUseSvg}
+          onDelete={handleDeleteEntry}
         />
       )}
 

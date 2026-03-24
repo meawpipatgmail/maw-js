@@ -362,6 +362,7 @@ import { handleCurrent } from "./avatar/current";
 import { handleGallery } from "./avatar/gallery";
 import { handleSelect } from "./avatar/select";
 import { handleAll } from "./avatar/all";
+import { handleDeleteGalleryEntry } from "./avatar/delete";
 
 app.post("/api/avatar/generate", handleGenerate);
 app.get("/api/avatar/status/:jobId", handleStatus);
@@ -369,6 +370,7 @@ app.get("/api/avatar/current/:name", handleCurrent);
 app.get("/api/avatar/gallery/:name", handleGallery);
 app.post("/api/avatar/select", handleSelect);
 app.get("/api/avatar/all", handleAll);
+app.delete("/api/avatar/gallery/:name/:entryId", handleDeleteGalleryEntry);
 
 // Serve locally-saved avatar images
 app.get("/api/avatar/images/*", serveStatic({
