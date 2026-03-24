@@ -1,10 +1,11 @@
 import { memo, useState, useEffect, useRef, useCallback } from "react";
 import { ansiToHtml } from "../lib/ansi";
-import { roomStyle } from "../lib/constants";
+import { roomStyle, agentColor } from "../lib/constants";
 import { wsUrl } from "../lib/api";
 import type { Session, AgentState } from "../lib/types";
 import { CommandAwareInput } from "./CommandAwareInput";
 import { AgentAvatar } from "./AgentAvatar";
+import { useFleetStore } from "../lib/store";
 
 interface TerminalViewProps {
   sessions: Session[];
@@ -41,7 +42,7 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
           setCaptureHtml(ansiToHtml(data.content || "(empty)"));
           if (atBottom) requestAnimationFrame(() => out?.scrollTo(0, out.scrollHeight));
         }
-      } catch {}
+      } catch { }
     };
 
     ws.onclose = () => { wsRef.current = null; };
@@ -195,10 +196,13 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
   const selectedAgent = selectedTarget ? agents.find(a => a.target === selectedTarget) : null;
   const selectedSessionName = selectedTarget ? selectedTarget.split(":")[0] : "";
   const selectedAccent = selectedSessionName ? roomStyle(selectedSessionName).accent : "#89b4fa";
+  const avatarImageUrl = useFleetStore((s) => s.avatarUrls)[selectedAgent?.name ?? ""] ?? null;
+  const avatarAccentColor = selectedAgent ? agentColor(selectedAgent.name) : "#89b4fa";
+  const statusColor = selectedAgent?.status === "busy" ? "#fdd835" : selectedAgent?.status === "ready" ? "#4caf50" : "#666";
 
-  // Sidebar content — shared between desktop and mobile drawer
-  const sidebarContent = (
-    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#08080e" }}>
+  // Sidebar agent list — top half
+  const agentList = (
+    <div className="overflow-y-auto" style={{ background: "#08080e" }}>
       {sessions.map(session => {
         const style = roomStyle(session.name);
         return (
@@ -210,7 +214,7 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
               const target = `${session.name}:${w.index}`;
               const isSelected = target === selectedTarget;
               const agent = agents.find(a => a.target === target);
-              const statusColor = agent?.status === "busy" ? "#ffa726" : agent?.status === "ready" ? "#4caf50" : "#333";
+              const sc = agent?.status === "busy" ? "#ffa726" : agent?.status === "ready" ? "#4caf50" : "#333";
               return (
                 <div
                   key={target}
@@ -234,7 +238,7 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
                         status={agent.status}
                         preview={agent.preview}
                         accent={style.accent}
-                        onClick={() => {}}
+                        onClick={() => { }}
                         size={48}
                         viewBox="-55 -55 110 88"
                       />
@@ -246,6 +250,58 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
           </div>
         );
       })}
+    </div>
+  );
+
+  // Sidebar content — agent list top half + avatar bottom half (desktop only)
+  const sidebarContent = (
+    <div className="flex flex-col h-full" style={{ background: "#08080e" }}>
+      {/* Top 50%: agent list */}
+      <div className="overflow-y-auto" style={{ height: "50%" }}>
+        {agentList}
+      </div>
+      {/* Bottom 50%: selected agent full-body avatar (desktop only, when available) */}
+      <div className="hidden sm:flex flex-col shrink-0 border-t border-white/[0.06]" style={{ height: "50%" }}>
+        {avatarImageUrl && selectedAgent ? (
+          <>
+            <div className="flex-1 min-h-0 overflow-hidden relative">
+              <img
+                src={avatarImageUrl}
+                alt={selectedAgent.name}
+                draggable={false}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  objectPosition: "top center",
+                  display: "block",
+                }}
+              />
+            </div>
+            <div className="px-3 pb-3 pt-1 flex flex-col gap-1 shrink-0">
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full shrink-0"
+                  style={{ background: statusColor, boxShadow: `0 0 4px ${statusColor}` }} />
+                <span className="text-[10px] font-mono" style={{ color: statusColor }}>
+                  {selectedAgent.status}
+                </span>
+              </div>
+              <div className="text-[11px] font-mono font-medium truncate" style={{ color: avatarAccentColor }}>
+                {selectedAgent.name.replace(/-oracle$/, "").replace(/-/g, " ")}
+              </div>
+              {selectedAgent.preview && (
+                <div className="text-[9px] font-mono text-white/30 truncate">
+                  {selectedAgent.preview.slice(0, 40)}
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <span className="text-[10px] font-mono text-white/10">no avatar</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 
@@ -290,9 +346,9 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
             aria-label="toggle window list"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <rect y="2" width="16" height="2" rx="1"/>
-              <rect y="7" width="16" height="2" rx="1"/>
-              <rect y="12" width="16" height="2" rx="1"/>
+              <rect y="2" width="16" height="2" rx="1" />
+              <rect y="7" width="16" height="2" rx="1" />
+              <rect y="12" width="16" height="2" rx="1" />
             </svg>
           </button>
           {/* Mini avatar */}
@@ -304,7 +360,7 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
                 status={selectedAgent.status}
                 preview={selectedAgent.preview}
                 accent={selectedAccent}
-                onClick={() => {}}
+                onClick={() => { }}
                 size={48}
                 viewBox="-55 -55 110 88"
               />
@@ -325,7 +381,7 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
         {/* Output */}
         <div
           ref={outputRef}
-          className="flex-1 overflow-y-auto px-3 py-2 font-mono text-[11px] sm:text-[13px] leading-[1.35]"
+          className="flex-1 overflow-y-auto px-3 py-2 font-mono text-[11px] sm:text-[13px] leading-[1.35] relative"
           style={{ background: "#0a0a0f", whiteSpace: "pre", wordBreak: "normal", overflowX: "auto", color: "#aaa" }}
         >
           {captureHtml ? (
@@ -333,6 +389,25 @@ export const TerminalView = memo(function TerminalView({ sessions, agents, conne
           ) : (
             <div className="text-white/15 text-center mt-[30vh] text-sm">
               {selectedTarget ? "connecting..." : "select a window \u2190"}
+            </div>
+          )}
+          {/* === MOBILE: Ghost overlay === */}
+          {avatarImageUrl && (
+            <div
+              className="sm:hidden pointer-events-none fixed bottom-[55px] right-0 max-w-full w-[160px]"
+            >
+              <img
+                src={avatarImageUrl}
+                alt={selectedAgent?.name}
+                draggable={false}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  objectPosition: "top center",
+                  display: "block",
+                }}
+              />
             </div>
           )}
         </div>
