@@ -71,7 +71,7 @@ export const AVATAR_POSE: Record<AvatarStyle, string> = {
   chibi:
     "(high contrast:0.7), (bright lighting:0.2), (cel shading:0.1), (warm tones:1), solo, full body, full shot, standing, looking at viewer, soft lighting, chibi style, detailed character design, soft shading, ((white background)), ((plain background)), ((simple background)), ((solid color background))",
   anime:
-    "(high contrast:0.7), (bright lighting:0.2), (cel shading:0.1), (warm tones:1), solo, full body, full shot, standing, looking at viewer, soft lighting, anime style, detailed character design, soft shading, ((white background)), ((plain background)), ((simple background)), ((solid color background))",
+    "(high contrast:0.7), (bright lighting:0.2), (cel shading:0.1), (warm tones:1), solo, medium full shot, standing, looking at viewer, soft lighting, anime style, detailed character design, soft shading, ((white background)), ((plain background)), ((simple background)), ((solid color background))",
   realistic:
     "(high contrast:0.7), (bright lighting:0.2), (cinematic lighting:0.1), (warm tones:1), solo, medium shot, standing, looking at viewer, soft lighting, detailed character design, soft shading, ((white background)), ((plain background)), ((simple background)), ((solid color background))",
 };
