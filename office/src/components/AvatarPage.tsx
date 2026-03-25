@@ -93,7 +93,7 @@ function OracleSelector({ agents, selected, onSelect }: {
         {selectedAgent ? (
           <>
             <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 flex items-center justify-center" style={{ background: "#1a1a24" }}>
-              <AgentAvatar name={selectedAgent.name} target={selectedAgent.target} status={selectedAgent.status} preview={selectedAgent.preview} accent="#89b4fa" onClick={() => {}} size={[28, 24]} viewBox="-55 -55 110 88" />
+              <AgentAvatar name={selectedAgent.name} target={selectedAgent.target} status={selectedAgent.status} preview={selectedAgent.preview} accent="#89b4fa" onClick={() => { }} size={[28, 24]} viewBox="-55 -55 110 88" />
             </div>
             <span className="font-mono text-[13px]" style={{ color: "#89b4fa" }}>{selectedAgent.name}</span>
             <span className="text-[11px] text-white/30 font-mono">{selectedAgent.target}</span>
@@ -118,7 +118,7 @@ function OracleSelector({ agents, selected, onSelect }: {
               onClick={() => { onSelect(agent.name); setOpen(false); }}
             >
               <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 flex items-center justify-center" style={{ background: "#0f0f18" }}>
-                <AgentAvatar name={agent.name} target={agent.target} status={agent.status} preview={agent.preview} accent="#89b4fa" onClick={() => {}} size={[24, 21]} viewBox="-55 -55 110 88" />
+                <AgentAvatar name={agent.name} target={agent.target} status={agent.status} preview={agent.preview} accent="#89b4fa" onClick={() => { }} size={[24, 21]} viewBox="-55 -55 110 88" />
               </div>
               <span className="font-mono text-[12px]" style={{ color: agent.name === selected ? "#89b4fa" : "#ccc" }}>
                 {agent.name === selected ? "✓ " : ""}{agent.name}
@@ -235,7 +235,7 @@ function AvatarDisplay({ imageUrl, oracleName, onExpand }: { imageUrl: string | 
             status="ready"
             preview=""
             accent="#89b4fa"
-            onClick={() => {}}
+            onClick={() => { }}
             size={[88, 78]}
             viewBox="-55 -55 110 88"
             forceSvg
@@ -351,7 +351,7 @@ function GalleryGrid({ gallery, selectedId, oracleName, onSelect, onUseSvg, onDe
           onClick={onUseSvg}
           title="Use procedural SVG"
         >
-          <AgentAvatar name={oracleName} target="maw:0" status="ready" preview="" accent="#89b4fa" onClick={() => {}} size={[40, 36]} viewBox="-55 -55 110 88" forceSvg />
+          <AgentAvatar name={oracleName} target="maw:0" status="ready" preview="" accent="#89b4fa" onClick={() => { }} size={[40, 36]} viewBox="-55 -55 110 88" forceSvg />
         </button>
 
         {gallery.map(entry => (
@@ -406,14 +406,14 @@ export function AvatarPage({ agents }: { agents: AgentState[] }) {
     fetch(apiUrl("/api/avatar/all"))
       .then(r => r.json())
       .then((data: Record<string, string | null>) => setAvatarUrls(data))
-      .catch(() => {});
+      .catch(() => { });
   }, [setAvatarUrls]);
 
   const fetchGallery = useCallback((name: string) => {
     fetch(apiUrl(`/api/avatar/gallery/${encodeURIComponent(name)}`))
       .then(r => r.json())
       .then((data: { gallery: GalleryEntry[] }) => setGallery(data.gallery || []))
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const fetchCurrent = useCallback((name: string) => {
@@ -426,7 +426,7 @@ export function AvatarPage({ agents }: { agents: AgentState[] }) {
           setForm(f => ({ ...f, ...data.fields }));
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   // Load when Oracle changes
@@ -510,7 +510,7 @@ export function AvatarPage({ agents }: { agents: AgentState[] }) {
         setSelectedId(data.selectedId);
         refreshGlobalAvatars();
       }
-    } catch {}
+    } catch { }
   }, [selectedOracle, refreshGlobalAvatars]);
 
   const handleDeleteEntry = useCallback(async (entryId: string) => {
@@ -529,7 +529,7 @@ export function AvatarPage({ agents }: { agents: AgentState[] }) {
         }
         refreshGlobalAvatars();
       }
-    } catch {}
+    } catch { }
   }, [selectedOracle, selectedId, refreshGlobalAvatars]);
 
   const handleUseSvg = useCallback(async () => {
@@ -546,7 +546,7 @@ export function AvatarPage({ agents }: { agents: AgentState[] }) {
         setSelectedId(null);
         refreshGlobalAvatars();
       }
-    } catch {}
+    } catch { }
   }, [selectedOracle, refreshGlobalAvatars]);
 
   const locked = !selectedOracle;
@@ -666,8 +666,8 @@ export function AvatarPage({ agents }: { agents: AgentState[] }) {
         {locked
           ? "Select an Oracle first"
           : status.phase === "pending"
-          ? "Generating... (may take ~30s)"
-          : `Generate Avatar for ${selectedOracle}`}
+            ? "Generating... (may take ~30s)"
+            : `Generate Avatar for ${selectedOracle}`}
       </button>
     </div>
   );

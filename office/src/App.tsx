@@ -142,7 +142,7 @@ export function App() {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       // Terminal view captures all keystrokes — don't fire global shortcuts
       if (routeRef.current === "terminal") return;
-      if (e.key === "?" ) {
+      if (e.key === "?") {
         setShowShortcuts(true);
         return;
       }
@@ -174,7 +174,7 @@ export function App() {
     const load = () => fetch(apiUrl("/api/avatar/all"))
       .then(r => r.json())
       .then((data: Record<string, string | null>) => setAvatarUrls(data))
-      .catch(() => {});
+      .catch(() => { });
     load();
     const id = setInterval(load, 30_000);
     return () => clearInterval(id);
@@ -273,8 +273,10 @@ export function App() {
 
   if (route === "fleet") {
     return (
-      <Layout activeView="fleet" {...layoutProps} statusBarChildren={<FleetControls agents={agents} send={send} />}>
-        <FleetGrid sessions={sessions} agents={agents} connected={connected} send={send} onSelectAgent={onSelectAgent} eventLog={eventLog} addEvent={addEvent} feedActive={feedActive} agentFeedLog={agentFeedLog} />
+      <Layout activeView="fleet" {...layoutProps} statusBarChildren={<FleetControls agents={agents} send={send} />} fullHeight>
+        <div className="h-full overflow-y-auto">
+          <FleetGrid sessions={sessions} agents={agents} connected={connected} send={send} onSelectAgent={onSelectAgent} eventLog={eventLog} addEvent={addEvent} feedActive={feedActive} agentFeedLog={agentFeedLog} />
+        </div>
       </Layout>
     );
   }
@@ -353,8 +355,8 @@ export function App() {
 
   if (route === "avatar") {
     return (
-      <Layout activeView="avatar" {...layoutProps}>
-        <div className="overflow-y-auto" style={{ background: "#0a0a0f", minHeight: "calc(100dvh - 48px)" }}>
+      <Layout activeView="avatar" {...layoutProps} fullHeight>
+        <div className="h-full relative w-full min-h-dvhrelative w-full min-h-dvhoverflow-y-auto" style={{ background: "#0a0a0f" }}>
           <AvatarPage agents={agents} />
         </div>
       </Layout>
