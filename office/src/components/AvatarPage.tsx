@@ -374,7 +374,7 @@ function GalleryGrid({ gallery, selectedId, oracleName, onSelect, onUseSvg, onDe
             </button>
             {/* Delete button — visible on hover */}
             <button
-              className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+              className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10"
               style={{ background: "#ef535090", color: "#fff", fontSize: 10 }}
               onClick={(e) => { e.stopPropagation(); setConfirmId(entry.id); }}
               title="Delete avatar"
