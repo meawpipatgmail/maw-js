@@ -10,3 +10,4 @@ fleet/*.json
 !fleet/*.example.json
 package-lock.json
 .env
+.DS_Store
