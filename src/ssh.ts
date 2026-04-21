@@ -48,9 +48,16 @@ export async function listSessions(host?: string): Promise<Session[]> {
 
 export function findWindow(sessions: Session[], query: string): string | null {
   const q = query.toLowerCase();
+  // 1. Match by window name
   for (const s of sessions) {
     for (const w of s.windows) {
       if (w.name.toLowerCase().includes(q)) return `${s.name}:${w.index}`;
+    }
+  }
+  // 2. Fallback: match by session name (handles renamed windows e.g. claude version strings)
+  for (const s of sessions) {
+    if (s.name.toLowerCase().includes(q) && s.windows.length > 0) {
+      return `${s.name}:${s.windows[0].index}`;
     }
   }
   if (query.includes(":")) return query;
